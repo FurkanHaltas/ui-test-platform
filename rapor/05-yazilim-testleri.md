@@ -89,7 +89,19 @@ Son tam koşu (25.11.2026, Windows 11, Python 3.12, Chromium 159 headless):
 | **Toplam** | **86** | **86** | **0** | **~88 sn** |
 
 - Her `python -m pytest` çalıştırması `reports/junit.xml` (makine okur) ve `reports/test-raporu.html` (tarayıcıda açılan tek dosyalık rapor) üretir. Teslimde HTML rapor eklere konacak.
-- **Sürekli entegrasyon:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri temiz bir Ubuntu makinesinde koşturur, YAML örneklerini doğrular, katman katman özet tablo yazar ve raporları 14 gün saklar. *(GitHub'a yüklenince ilk CI sonucu ve ekran görüntüsü buraya eklenecek.)*
+- **Sürekli entegrasyon:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri temiz bir Ubuntu makinesinde koşturur, YAML örneklerini doğrular, katman katman özet tablo yazar ve raporları 14 gün saklar.
+
+**İlk CI koşusu** (25.11.2026, [GitHub Actions #1](https://github.com/FurkanHaltas/ui-test-platform/actions/runs/45630609044), Ubuntu, `ubuntu-latest`): **başarılı**, toplam 2 dk 7 sn. Ekran görüntüsü: [11-ci-github-actions.png](ekran-goruntuleri/11-ci-github-actions.png).
+
+| CI adımı | Süre |
+|----------|-----:|
+| Kodu al, Python 3.12 kur, bağımlılıkları kur | 17 sn |
+| Chromium'u sistem kütüphaneleriyle kur | 33 sn |
+| Örnek YAML'ları doğrula + geçersiz örneğin reddi | < 1 sn |
+| **86 testi koştur** | **66 sn** |
+| Test özetini yaz, raporları sakla | 1 sn |
+
+Testlerin Windows'ta (geliştirme) ve Linux'ta (CI) aynı sonucu vermesi, platformdan bağımsızlık gereksinimini (NFR-08) de doğruluyor.
 
 ## 5.7 Tespit edilen ve giderilen hatalar
 
@@ -108,5 +120,6 @@ Ayrıntılı kayıt: [hata-kaydi.md](hata-kaydi.md) (belirti, kök neden, çöz�
 | H-09 | Editörde hata kutusu ekran dışında kalıyordu | Elle inceleme | ✅ |
 | H-10 | Koşu süzgecinde "Tüm testler" seçiliyken sayfa yerine JSON hatası | **E2E testi** | ✅ |
 | H-11 | E2E testleri entegrasyon testlerinden önce koşunca Playwright çakışması | Test sırası denemesi | ✅ |
+| H-12 | CI'da kullanımdan kalkan Node.js 20 uyarısı | İlk CI koşusu | ✅ |
 
 Dikkat çekici olan: H-04 ve H-10 doğrudan platformun kendi otomatik testleri tarafından bulundu. H-07'yi ise platformun doğrulayıcısı, örnek test yazılırken yakaladı.

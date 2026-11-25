@@ -1,8 +1,10 @@
 # Otomatik UI Test Platformu
 
+[![CI](https://github.com/FurkanHaltas/ui-test-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/FurkanHaltas/ui-test-platform/actions/workflows/ci.yml)
+
 BİLS403 Yazılım Mühendisliği final projesi. Web uygulamalarının uçtan uca (E2E) testlerini **kod yazmadan, YAML ile** tanımlayıp gerçek bir tarayıcıda (Playwright + Chromium) çalıştıran platform.
 
-> Durum: **MVP tamam** (Aşama 1–3). Aşama 4: platformun kendi E2E testleri, GitHub Actions iş akışı ve görsel regresyon (bonus) hazır; GitHub'a yükleme bekliyor (bkz. [ROADMAP.md](ROADMAP.md)).
+> Durum: **MVP tamam** (Aşama 1–3). Aşama 4: platformun kendi E2E testleri, GitHub Actions ile CI ve görsel regresyon (bonus) tamam. Sırada rapor ve sunum (bkz. [ROADMAP.md](ROADMAP.md)).
 
 ```
 Tarayıcı ──▶ Web arayüzü ┐

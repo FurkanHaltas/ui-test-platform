@@ -17,6 +17,7 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 | H-09 | 25.11.2026 | 3 | Rapor sayfasının elle incelenmesi | ✅ |
 | H-10 | 25.11.2026 | 4 | E2E testi | ✅ |
 | H-11 | 25.11.2026 | 4 | Test sırası denemesi | ✅ |
+| H-12 | 25.11.2026 | 4 | İlk CI koşusu | ✅ |
 
 ---
 
@@ -90,3 +91,9 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 - **Kök neden:** pytest-playwright, ilk E2E testinden sonra test oturumu boyunca kendi Playwright örneğini (ve onun olay döngüsünü) açık tutuyor. Motorun aynı süreçte açtığı ikinci senkron Playwright buna izin vermiyor. Varsayılan sırada (birim → entegrasyon → E2E) sorun görünmüyordu, yani hata klasör sırasına bağlı, gizli bir kırılganlıktı.
 - **Çözüm:** `tests/conftest.py` içindeki küçük bir pytest kancası (`pytest_collection_modifyitems`) E2E testlerini komut satırındaki sıra ne olursa olsun her zaman en sona alıyor. E2E testlerinde motor zaten ayrı bir süreçte (worker) çalıştığı için etkilenmiyor.
 - **Doğrulama:** Ters sırayla tekrar koşuldu: 2/2 geçti.
+
+## H-12 — CI'da kullanımdan kalkan Node.js 20 uyarısı
+- **Belirti:** İlk GitHub Actions koşusu başarılıydı ama bir uyarı verdi: kullanılan `actions/checkout`, `actions/setup-python` ve `actions/upload-artifact` sürümleri Node.js 20 üzerinde çalışıyor ve Node.js 20 kullanımdan kalkıyor.
+- **Kök neden:** İş akışı yazılırken eylemlerin bilinen eski ana sürümleri (v4/v5) kullanılmıştı.
+- **Çözüm:** Her eylemin en güncel sürümü GitHub'dan kontrol edildi (hepsi v7, Node 24) ve iş akışı güncellendi.
+- **Ders:** Uyarılar da okunmalı. Bugün sadece uyarı olan şey, GitHub eski çalışma ortamını kaldırdığı gün CI'ı kırar.

@@ -78,3 +78,7 @@ python -m api.seed                                # örnek testleri DB'ye yükle
 - E2E (`tests/e2e/`): conftest sunucu + worker'ı geçici klasörde ayrı süreç olarak başlatır. pytest-playwright yüzünden E2E her zaman en sona sıralanır (`tests/conftest.py`, H-11); E2E içinde motoru aynı süreçte çağırma, worker'a koşturt.
 - CI: `.github/workflows/ci.yml` (Ubuntu, dış site yok). Özet: `.github/scripts/test_ozeti.py`.
 - Görsel regresyon: `expectScreenshot`, `engine/visual.py` (Pillow), referanslar `data/baselines/<slug>/`. Web'de "yeni referans yap" = `POST /runs/{id}/steps/{n}/accept`.
+
+## Depo
+- Uzak depo: https://github.com/FurkanHaltas/ui-test-platform (herkese açık), dal `main`. Her push CI'ı tetikler.
+- `Proje Başlama Promptu.txt` sadece yerelde kalır (`.gitignore`'da); git geçmişinden de çıkarıldı. Asla commit'leme.

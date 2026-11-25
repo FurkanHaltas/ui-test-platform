@@ -18,7 +18,7 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | FR-10 | Kullanıcı koşu geçmişini görebilmeli, teste ve duruma göre süzebilmeli; her testin son durumu listede görünmeli. | Should | ✅ |
 | FR-11 | Testler komut satırından tek dosya ya da klasör olarak koşturulabilmeli; sonuç çıkış koduyla bildirilmeli (CI için). | Should | ✅ |
 | FR-12 | Web arayüzü: test listesi, canlı doğrulamalı YAML editörü, koşu başlatma, koşu geçmişi ve rapor ekranı. | Must | ✅ |
-| FR-13 | Platformun kendi testleri GitHub Actions'ta her değişiklikte otomatik koşmalı. | Should | 🟡 İş akışı hazır, GitHub'a yüklenince doğrulanacak |
+| FR-13 | Platformun kendi testleri GitHub Actions'ta her değişiklikte otomatik koşmalı. | Should | ✅ |
 | FR-14 | Görsel regresyon: ekran görüntüsünü önceki koşuyla karşılaştırma. | Could | ✅ (bonus) |
 | FR-15 | Kaydedici: tarayıcıda yapılan işlemleri YAML teste çevirme. | Could | ⏳ Bonus |
 | FR-16 | Yapay zekâ ile kalan testin hatasını açıklama. | Could | ⏳ Bonus |
@@ -127,5 +127,5 @@ Kabul kriterleri *Verilen – Olduğunda – O zaman* (Given–When–Then) kal�
 | FR-10 | US-4 | `test_api::test_list_runs_filters`, `test_db::test_last_run_status_on_test` |
 | FR-11 | US-5 | `test_cli` |
 | FR-12 | US-1…4 | `test_web` (12 test: formlar, yönlendirmeler, hata gösterimi, XSS kaçışı, rapor, süzgeç); E2E-1…6 (`test_platform_e2e`) |
-| FR-13 | US-5 | `.github/workflows/ci.yml` (ilk CI koşusu GitHub'a yüklenince) |
+| FR-13 | US-5 | `.github/workflows/ci.yml`; ilk koşu başarılı (GitHub Actions #1) |
 | FR-14 | — | `test_visual` (6 test), E2E-8 `test_visual_regression_flow` |
