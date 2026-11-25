@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Optional
 
 from api import db
+from engine.console import use_utf8_output
 from engine.dsl import parse_test
 from engine.runner import run_tests
 
@@ -52,6 +53,7 @@ def main(argv=None) -> int:
                         help="kuyruk boşken kaç saniyede bir bakılsın (varsayılan 1)")
     parser.add_argument("--channel", choices=["chrome", "msedge"], help="kurulu Chrome/Edge'i kullan")
     args = parser.parse_args(argv)
+    use_utf8_output()
 
     conn = db.connect()
     db.init_db(conn)

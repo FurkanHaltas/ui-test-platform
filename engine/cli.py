@@ -17,6 +17,7 @@ from pathlib import Path
 
 from playwright.sync_api import Error as PlaywrightError
 
+from engine.console import use_utf8_output
 from engine.dsl import DslError, TestDefinition, load_test
 from engine.results import RunResult
 from engine.runner import DEFAULT_ARTIFACTS_DIR, run_tests
@@ -32,9 +33,7 @@ ICONS = {"passed": f"{GREEN}✓{RESET}", "failed": f"{RED}✗{RESET}", "skipped"
 
 
 def main(argv=None) -> int:
-    if not sys.stdout.isatty():
-        # Çıktı bir dosyaya/boruya giderken Windows'ta ✓ ✗ karakterleri bozulmasın.
-        sys.stdout.reconfigure(encoding="utf-8")
+    use_utf8_output()
 
     parser = argparse.ArgumentParser(prog="python -m engine", description="YAML tabanlı UI test motoru")
     sub = parser.add_subparsers(dest="command", required=True)

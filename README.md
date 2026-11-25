@@ -2,7 +2,12 @@
 
 BİLS403 Yazılım Mühendisliği final projesi. Web uygulamalarının uçtan uca (E2E) testlerini **kod yazmadan, YAML ile** tanımlayıp gerçek bir tarayıcıda (Playwright + Chromium) çalıştıran platform.
 
-> Durum: **Aşama 1 — Test motoru** tamam. API, web arayüzü ve CI sonraki aşamalarda (bkz. [ROADMAP.md](ROADMAP.md)).
+> Durum: **Aşama 1 (test motoru)** ve **Aşama 2 (API + SQLite + worker)** tamam. Web arayüzü ve CI sonraki aşamalarda (bkz. [ROADMAP.md](ROADMAP.md)).
+
+```
+İstemci ──HTTP──▶ API (FastAPI) ──▶ SQLite (tests, runs = kuyruk) ◀── Worker ──▶ Test motoru ──▶ Chromium ──▶ Hedef site
+                       └──── /artifacts (ekran görüntüleri, trace) ◀──────────────────┘
+```
 
 ## Kurulum (Windows / PowerShell)
 
@@ -23,7 +28,7 @@ python -m engine run examples/login.yaml          # tek test
 python -m engine run examples/                    # klasördeki tüm testler
 python -m engine run examples/login.yaml --headed --channel chrome   # tarayıcı görünür
 python -m engine validate examples/gecersiz/      # sadece YAML doğrulama
-python -m pytest                                  # birim testleri
+python -m pytest                                  # birim + entegrasyon testleri
 ```
 
 Her koşunun çıktısı `artifacts/<tarih-saat>_<test-adı>/` altına yazılır: `result.json` ve ekran görüntüleri. Kalan testlerde ayrıca `trace.zip` olur, şu komutla açılır:
@@ -31,6 +36,40 @@ Her koşunun çıktısı `artifacts/<tarih-saat>_<test-adı>/` altına yazılır
 ```powershell
 python -m playwright show-trace artifacts\<klasör>\trace.zip
 ```
+
+## Platform: API + worker (Aşama 2)
+
+İki ayrı terminalde çalıştırın (ikisinde de önce `.venv\Scripts\Activate.ps1`):
+
+```powershell
+uvicorn api.main:app --reload
+```
+```powershell
+python -m worker
+```
+
+Örnek testleri veritabanına yüklemek için (bir kez):
+
+```powershell
+python -m api.seed
+```
+
+API belgeleri ve deneme ekranı: <http://127.0.0.1:8000/docs>
+
+| Uç nokta | Görevi |
+|----------|--------|
+| `GET /api/health` | Sağlık durumu ve kuyruktaki iş sayısı |
+| `POST /api/validate` | YAML'ı kaydetmeden doğrula |
+| `GET/POST /api/tests` | Testleri listele / yeni test kaydet (`{"yaml": "..."}`) |
+| `GET/PUT/DELETE /api/tests/{id}` | Tek test |
+| `POST /api/tests/{id}/runs` | Testi kuyruğa al (**202**) |
+| `GET /api/runs?test_id=&status=` | Koşu listesi |
+| `GET /api/runs/{id}` | Koşu ayrıntısı: adımlar, `screenshot_url`, `trace_url` |
+| `GET /artifacts/...` | Ekran görüntüsü ve trace dosyaları |
+
+Koşu durumları: `queued` → `running` → `passed` / `failed` (test bir hata buldu) / `error` (test çalıştırılamadı).
+
+Veritabanı: `data/platform.db` (`UITP_DB` ortam değişkeniyle değiştirilebilir). Worker'a `--once` verilirse kuyruğu bitirip çıkar; `--channel chrome` ile kurulu Chrome'u kullanır.
 
 ## Test formatı (DSL v1)
 
@@ -69,6 +108,10 @@ steps:
 |--------|--------|
 | `engine/` | Test motoru (`dsl`, `locators`, `steps`, `runner`, `results`, `cli`) |
 | `examples/` | saucedemo.com örnek testleri (biri bilerek kalır), `gecersiz/` hatalı format örneği |
-| `tests/unit/` | Birim testleri |
+| `api/` | FastAPI uygulaması (`main.py`), veritabanı katmanı (`db.py`), modeller (`schemas.py`), `seed.py` |
+| `worker/` | Kuyruk işleyici (`python -m worker`) |
+| `tests/unit/` | Birim testleri (DSL, veritabanı, API) |
+| `tests/integration/` | Worker + gerçek Chromium testi (yerel sayfaya karşı) |
 | `docs/` | [Tasarım kararları](docs/kararlar.md), [UML diyagramları](docs/uml/) |
-| `api/`, `worker/`, `web/`, `tests/e2e/` | Sonraki aşamalar |
+| `data/` | SQLite veritabanı (git'e girmez) |
+| `web/`, `tests/e2e/` | Sonraki aşamalar |

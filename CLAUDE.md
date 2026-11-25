@@ -20,7 +20,8 @@ Ekran görüntüleri ve trace dosyaları `artifacts/` altına yazılır.
 
 ## Klasörler
 - `engine/` test motoru: `dsl.py`, `locators.py`, `steps.py`, `runner.py`, `results.py`, `cli.py`
-- `api/`, `worker/`, `web/`, `tests/e2e/` sonraki aşamalar
+- `api/` FastAPI + `db.py` (SQLite), `worker/` kuyruk işleyici, `tests/integration/` worker testi
+- `web/`, `tests/e2e/` sonraki aşamalar
 - `examples/` örnek YAML testleri
 - `tests/unit/` motorun birim testleri
 - `docs/` `kararlar.md` (tasarım kararları, rapor için) ve `uml/` (Mermaid diyagramları)
@@ -46,5 +47,14 @@ Ekran görüntüleri ve trace dosyaları `artifacts/` altına yazılır.
 .venv\Scripts\Activate.ps1
 python -m engine run examples/login.yaml          # tek test
 python -m engine run examples/ --headed           # klasördeki tüm testler, tarayıcı görünür
-python -m pytest tests/unit                       # birim testleri
+python -m pytest                                  # birim + entegrasyon testleri
+uvicorn api.main:app --reload                     # API (http://127.0.0.1:8000/docs)
+python -m worker                                  # kuyruk işleyici (ayrı terminal)
+python -m api.seed                                # örnek testleri DB'ye yükle
 ```
+
+## Aşama 2 notları
+- `api/db.py` düz SQL + sqlite3 (ORM yok). `runs` tablosundaki `queued` satırlar = iş kuyruğu.
+- Testler geçici DB kullanır: `tests/conftest.py` içindeki `conn` fixture'ı `UITP_DB`'yi ayarlar.
+- Motor dosya yollarını `as_posix()` ile yazar; API bunları `/artifacts/...` URL'lerine çevirir.
+- Bu makinede indirilen Chromium görünür modda açılmıyor: `--headed` için `--channel chrome` kullan.

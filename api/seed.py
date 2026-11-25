@@ -8,10 +8,12 @@ Aynı adda test zaten varsa atlar, yani birden fazla çalıştırmak güvenlidir
 from pathlib import Path
 
 from api import db
+from engine.console import use_utf8_output
 from engine.dsl import DslError, load_test
 
 
 def main() -> None:
+    use_utf8_output()
     conn = db.connect()
     db.init_db(conn)
     existing = {row["name"] for row in db.list_tests(conn)}

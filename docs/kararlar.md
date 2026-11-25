@@ -66,3 +66,51 @@ Her karar için: **ne** seçildi, **neden**, **alternatif** neydi.
 ## K13. Bilinçli olarak yapılmayanlar (şimdilik)
 - Tekrar deneme (retry), paralel koşu, değişkenler, Firefox/WebKit: Kapsamı küçük ve açıklanabilir tutmak için. Bonus listesinde (ROADMAP.md).
 - `placeholder` locator'ı yok: Promptta tanımlı 5 locator ile sınırlı kaldık.
+
+---
+
+# Tasarım Kararları (Aşama 2 — API, Veritabanı, Worker)
+
+## K14. API testi kendisi koşturmaz; kuyruk + ayrı worker süreci
+- **Ne:** `POST /api/tests/{id}/runs` sadece `runs` tablosuna `queued` bir satır ekler ve hemen **202 Accepted** döner. Testi ayrı bir süreç olan worker koşturur. İstemci sonucu `GET /api/runs/{id}` ile sorgular.
+- **Neden:** Bir E2E testi saniyeler, hatta dakikalar sürebilir. API isteği bu süre boyunca açık kalırsa zaman aşımına uğrar ve sunucu kilitlenir. Ayrı süreç olunca tarayıcı çökse bile API ayakta kalır. İleride daha fazla worker ekleyerek ölçeklenebilir.
+- **Alternatif:** FastAPI `BackgroundTasks`. Daha az parça, ama test API ile aynı süreçte çalışır; API yeniden başlarsa iş kaybolur, ölçeklenemez.
+
+## K15. Kuyruk = veritabanı tablosu (ayrı kuyruk sistemi yok)
+- **Ne:** `status = 'queued'` satırları kuyruktur. Worker işi tek bir SQL cümlesiyle alır:
+  `UPDATE runs SET status='running' WHERE id = (en eski queued) AND status='queued' RETURNING *`
+- **Neden:** Redis/RabbitMQ gibi ek bir servis kurmak gerekmez, durum zaten veritabanında. Tek cümle olduğu için **atomiktir**: iki worker aynı anda sorsa bile aynı işi ikisi birden alamaz.
+- **Bedel:** Worker kuyruk boşken saniyede bir veritabanına bakar (*polling*). Bu ders projesi ölçeğinde önemsiz bir yük.
+- **Not:** Bu bekleme, test adımlarındaki "sabit sleep yasağı" (K7) ile çelişmez. O kural, sayfanın hazır olmasını tahminle beklemeyi yasaklıyor; burada ise sadece boş kuyruğa ne sıklıkla bakılacağı belirleniyor.
+
+## K16. SQLite + düz SQL (ORM yok)
+- **Neden:** İki tablo için ORM (SQLAlchemy) öğrenme ve açıklama yükü getirir. Python'un yerleşik `sqlite3` modülüyle her sorgu açıkça görünür. SQLite tek dosyadır, kurulum gerektirmez.
+- **WAL modu:** API ve worker aynı dosyaya aynı anda erişir. WAL (write-ahead log) modunda biri yazarken diğerleri okumaya devam edebilir. `timeout=10` sayesinde aynı anda iki yazma olursa biri hata vermek yerine bekler.
+- **Bağlantı:** Her HTTP isteği kendi bağlantısını alır ve kapatır (FastAPI `Depends`). Paylaşılan bağlantının thread sorunları olmaz.
+- **Konum:** `api/db.py`. Worker da bu modülü kullanır; ayrı bir paket açmak iki tüketici için gereksiz soyutlama olurdu.
+
+## K17. Koşu, YAML'ın bir kopyasını saklar
+- **Ne:** Kuyruğa alırken testin o anki YAML'ı `runs.yaml` sütununa kopyalanır.
+- **Neden:** Kullanıcı testi koşu kuyruktayken ya da bittikten sonra düzenleyebilir. Raporun "hangi adımlar koşturuldu" sorusuna her zaman doğru cevap vermesi gerekir (izlenebilirlik).
+
+## K18. Sonuç JSON olarak tek sütunda (`result_json`)
+- **Ne:** Motorun `RunResult` çıktısı olduğu gibi saklanır. Sorgulanması gereken alanlar (durum, süre, hata) ayrı sütunlarda tutulur.
+- **Neden:** Adım sonuçları her zaman bir koşuyla birlikte okunur, tek başına sorgulanmaz. Ayrı bir `run_steps` tablosu daha fazla kod getirir ama bir fayda sağlamaz. Motor ve API aynı modeli (K9) paylaşır.
+
+## K19. `failed` ile `error` ayrımı
+- **`failed`:** Test çalıştı, bir adım kaldı. Test, *sitede* bir sorun buldu.
+- **`error`:** Test hiç çalışamadı (tarayıcı açılamadı, worker yarıda kapandı). Sorun *platformda*.
+- **Neden:** Kullanıcının "sitem mi bozuk, test aracı mı?" sorusunu ayırt edebilmesi gerekir. Worker açılırken `running` durumunda kalmış koşuları `error` yapar (MVP'de tek worker varsayımı).
+
+## K20. Doğrulama hatası 422 + Türkçe liste; ayrı `/api/validate`
+- **Ne:** Geçersiz YAML kaydedilmez; yanıt `{"message": "Test tanımı geçersiz", "errors": [...]}` olur. `/api/validate` ise kaydetmeden kontrol eder.
+- **Neden:** Hata mesajları motorla aynıdır, tek kaynak `dsl.py`'dir. Aşama 3'teki web editörü `/api/validate` ile yazarken canlı kontrol yapabilecek. Testin adı YAML'daki `name` alanından alınır; ayrı bir alan iki yerde tutarsızlık yaratırdı.
+
+## K21. Dosyalar statik olarak sunulur
+- **Ne:** `artifacts/` klasörü `/artifacts` adresine bağlanır (`StaticFiles`). Her koşunun dosyaları `artifacts/runs/<koşu no>/` altındadır. API yanıtında yollar `screenshot_url` ve `trace_url` adreslerine çevrilir.
+- **Neden:** Web arayüzü ekran görüntüsünü doğrudan `<img src>` ile gösterebilir. Motor yolları `/` ile yazar (`as_posix`), böylece Windows'taki `\` karakterleri URL'yi bozmaz.
+
+## K22. Testler üç katmanlı
+- **Birim (DSL, DB, API):** Tarayıcı açmaz, bir saniyenin altında biter. Her test geçici bir veritabanı kullanır (`UITP_DB` ortam değişkeni).
+- **Entegrasyon (worker):** Gerçek Chromium ile, internete bağımlı olmadan, testin kendi açtığı yerel HTML sayfasına karşı çalışır.
+- **Platformun kendi E2E testleri:** Aşama 4'te.
