@@ -6,6 +6,7 @@ Kullanım:
     python -m engine run examples/login.yaml --headed # tarayıcı görünür açılır
     python -m engine run examples/ --channel chrome   # kurulu Google Chrome ile
     python -m engine run x.yaml --update-baselines    # görsel referansları yeniden oluştur
+    python -m engine run x.yaml --headed --slow-mo 800  # adımları yavaşça izle
     python -m engine validate examples/               # sadece YAML doğrulama, tarayıcı açmaz
 
 Çıkış kodları: 0 = hepsi geçti, 1 = en az bir test kaldı, 2 = geçersiz YAML.
@@ -44,6 +45,8 @@ def main(argv=None) -> int:
     run_p.add_argument("--headed", action="store_true", help="tarayıcıyı görünür aç")
     run_p.add_argument("--artifacts", type=Path, default=DEFAULT_ARTIFACTS_DIR,
                        help="çıktı klasörü (varsayılan: artifacts)")
+    run_p.add_argument("--slow-mo", type=int, default=0, metavar="MS",
+                       help="her adımı yavaşlat (ör. 800); tarayıcıda olanı izlemek için")
     run_p.add_argument("--update-baselines", action="store_true",
                        help="expectScreenshot adımlarında karşılaştırma yapma, referansı güncelle")
     run_p.add_argument("--channel", choices=["chrome", "msedge"],
@@ -63,7 +66,7 @@ def main(argv=None) -> int:
 
     try:
         results = run_tests(tests, headed=args.headed, artifacts_dir=args.artifacts, channel=args.channel,
-                            update_baselines=args.update_baselines)
+                            update_baselines=args.update_baselines, slow_mo=args.slow_mo)
     except PlaywrightError as e:
         # Genelde tarayıcı kurulmamıştır ya da başlatılamamıştır.
         print(f"{RED}✗ Tarayıcı başlatılamadı:{RESET} {str(e).splitlines()[0]}")

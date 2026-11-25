@@ -32,6 +32,7 @@ def run_tests(
     channel: Optional[str] = None,
     baselines_dir: Path = DEFAULT_BASELINES_DIR,
     update_baselines: bool = False,
+    slow_mo: int = 0,
 ) -> list[RunResult]:
     """Testleri sırayla koşturur. Tarayıcı bir kez açılır, her test kendi context'ini alır.
 
@@ -40,7 +41,8 @@ def run_tests(
     """
     results = []
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(headless=not headed, channel=channel)
+        # slow_mo: her tarayıcı işleminden sonra bu kadar ms bekle (sadece izlemek/sunum için)
+        browser = playwright.chromium.launch(headless=not headed, channel=channel, slow_mo=slow_mo)
         try:
             for test in tests:
                 # testId locator'ının hangi HTML özniteliğine bakacağı (ör. saucedemo: data-test)
