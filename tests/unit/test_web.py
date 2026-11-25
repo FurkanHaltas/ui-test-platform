@@ -132,6 +132,14 @@ def test_runs_page_filters(client, conn):
     assert client.get("/runs?status=yanlis").status_code == 200  # geçersiz süzgeç yok sayılır
 
 
+def test_runs_filter_form_with_all_tests_selected(client, conn):
+    # "Tüm testler" seçiliyken form test_id'yi boş gönderir (E2E testinin bulduğu hata, H-10).
+    db.create_run(conn, db.get_test(conn, create(client)))
+    r = client.get("/runs?test_id=&status=queued")
+    assert r.status_code == 200
+    assert 'class="strong">Web testi</a>' in r.text
+
+
 def test_missing_pages_are_404(client):
     assert client.get("/tests/999").status_code == 404
     assert client.get("/runs/999").status_code == 404

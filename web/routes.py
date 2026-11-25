@@ -157,10 +157,12 @@ def run_all(conn=Depends(get_conn)):
 # ---------------------------------------------------------------------------
 
 @router.get("/runs")
-def runs_page(request: Request, test_id: Optional[int] = None, status: Optional[str] = None,
-              conn=Depends(get_conn)):
-    if status not in (None, "", *STATUS_LABELS):
-        status = None
+def runs_page(request: Request, test_id: str = "", status: str = "", conn=Depends(get_conn)):
+    # Süzgeç formunda "Tüm testler" seçiliyken tarayıcı `test_id=` (boş) gönderir.
+    # Bu yüzden parametreleri metin olarak alıp kendimiz çeviriyoruz (bkz. hata kaydı H-10).
+    test_id = int(test_id) if test_id.isdigit() else None
+    if status not in STATUS_LABELS:
+        status = ""
     runs = db.list_runs(conn, test_id=test_id, status=status or None, limit=100)
     has_active = any(r["status"] in ("queued", "running") for r in runs)
     return render(request, "runs.html", runs=runs, tests=db.list_tests(conn),

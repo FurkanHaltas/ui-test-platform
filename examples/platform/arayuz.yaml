@@ -1,0 +1,15 @@
+# PLATFORM KENDİ KENDİNİ TEST EDİYOR: bu test, platformun kendi web arayüzünü platformun
+# kendi DSL'iyle sınar. E2E testlerinde (tests/e2e) worker tarafından koşturulur.
+# Elle denemek için: sunucu açıkken  python -m engine run examples/platform/arayuz.yaml
+name: Platform - Editör canlı doğrulama
+baseUrl: http://127.0.0.1:8000
+steps:
+  - goto: /
+  - expectVisible: { role: heading, name: Testler }
+  - click: { role: link, name: + Yeni test }
+  - expectUrl: /tests/new
+  - fill: { label: Test tanımı (YAML), value: "name: Eksik test" }
+  - expectVisible: { text: "'baseUrl' alanı zorunlu ama verilmemiş" }
+  - fill: { label: Test tanımı (YAML), value: "name: Tamam\nbaseUrl: https://a.com\nsteps:\n  - goto: /\n" }
+  - expectText: { css: "#validation", value: "✓ Geçerli · 1 adım" }
+  - screenshot: editor-gecerli
