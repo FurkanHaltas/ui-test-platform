@@ -145,3 +145,30 @@ Her karar için: **ne** seçildi, **neden**, **alternatif** neydi.
 ## K27. `goto` sadece HTML'in hazır olmasını bekler
 - **Ne:** `page.goto(..., wait_until="domcontentloaded")`.
 - **Neden:** Varsayılan `load` olayı, resimler ve reklam/analitik betikleri gibi testi ilgilendirmeyen bütün kaynakları bekler. Yavaş bir sitede testi gereksiz yere kaldırıyordu (H-08). Sonraki adımlar öğeleri zaten kendileri beklediği için güvenilirlik kaybı olmaz.
+
+---
+
+# Tasarım Kararları (Aşama 4 — Platformun Testleri, CI, Görsel Regresyon)
+
+## K28. E2E testleri gerçek süreçlerle, geçici bir ortamda
+- **Ne:** E2E test oturumu `uvicorn` sunucusunu ve worker'ı **ayrı süreçler** olarak, geçici bir klasörde ve geçici bir veritabanıyla başlatır (`tests/e2e/conftest.py`). Testler pytest-playwright'ın `page` nesnesiyle web arayüzünü gerçek bir kullanıcı gibi kullanır.
+- **Neden:** Kullanıcının gördüğü sistem budur: iki süreç, ortak veritabanı, gerçek tarayıcı. Test içi sahte (mock) bileşenler kuyruk ve süreçler arası iletişim gibi gerçek hataları gizlerdi. Geçici ortam sayesinde geliştiricinin verisi bozulmaz, testler her makinede aynı başlar.
+- **Hazırlık API'den, doğrulama arayüzden:** Bir testin "kaydedilmiş bir test olsun" önkoşulu API ile kurulur; asıl doğrulanan davranış ise ekrandan yapılır. Her E2E testi editörde YAML yazmakla uğraşsaydı testler yavaş ve kırılgan olurdu.
+
+## K29. Platform kendi kendini test ediyor
+- **Ne:** `examples/platform/arayuz.yaml`, platformun editörünü platformun kendi YAML diliyle test eder. E2E testi bu dosyayı kaydedip worker'a koşturur.
+- **Neden:** DSL'in gerçek bir web uygulamasını (kendi arayüzümüzü) test etmeye yettiğinin kanıtı. "Kendi ürününü kullanmak" (*dogfooding*) eksikleri erken gösterir.
+
+## K30. Test raporları ve CI
+- **Raporlar:** Her `pytest` çalıştırması `reports/junit.xml` ve `reports/test-raporu.html` üretir (`pytest.ini`). E2E testi kalırsa ekran görüntüsü ve trace `reports/e2e/` altına kaydedilir. Platformun kullanıcılarına sunduğu kanıt mantığını kendi testlerimize de uyguluyoruz.
+- **CI (GitHub Actions):** Her push ve pull request'te temiz bir Ubuntu makinesinde kurulum, örnek YAML'ların doğrulanması, geçersiz örneğin 2 çıkış koduyla reddedildiğinin kontrolü ve 86 testin tamamı. Sonuç iş sayfasına katman katman tablo olarak yazılır, raporlar 14 gün saklanır.
+- **Dış site yok:** CI'da saucedemo.com testleri koşmaz. Dış sitenin yavaşlığı CI'ı sebepsiz kırmızıya çevirirdi (H-08).
+- **Test sırası:** E2E testleri bir pytest kancasıyla her zaman en sona alınır (H-11).
+
+## K31. Görsel regresyon: Pillow ile basit piksel karşılaştırma
+- **Ne:** Yeni adım tipi `expectScreenshot: ad`. İlk koşuda o anki görüntü testin referansı olur (`data/baselines/<test-adı>/<ad>.png`). Sonraki koşularda piksel piksel karşılaştırılır: renk farkı 16'dan büyük piksel "değişmiş" sayılır, değişen oran %0,01'i aşarsa adım kalır. Rapor referans / bu koşu / fark (kırmızı) görüntülerini yan yana gösterir.
+- **Neden Pillow, neden pixelmatch değil:** ROADMAP'te pixelmatch düşünülmüştü. pixelmatch'in asıl artısı kenar yumuşatma (antialiasing) farklarını ayıklamak. Bu farklar ancak referans ile yeni görüntü farklı makinelerde ya da farklı tarayıcılarda alınınca ortaya çıkar. Bizde referans aynı makinede, aynı tarayıcıyla alınıyor. Pillow ile yazılan ~20 satırlık karşılaştırma bağımlılık eklemeden aynı işi görüyor ve satır satır açıklanabiliyor.
+- **Ölçüm:** Demo sitesinde aynı sürümün iki koşusu arasındaki fark **0 piksel**. Sürüm 2.0'ın yanlış toplamı ve sürüm etiketi **681 piksel (%0,074)**, yani eşiğin ~7 katı. Hem yanlış alarm yok hem de küçük bir metin değişikliği yakalanıyor.
+- **Kararlılık:** Ekran görüntüsü animasyonlar durdurulmuş ve yazı imleci gizlenmiş olarak alınıyor. Testi yazan, ekran görüntüsünden önce bir `expectVisible` ile sayfanın hazır olmasını beklemeli (örnekte böyle).
+- **Bilinçli değişiklik:** Fark kasıtlıysa rapordaki "Bu görüntüyü yeni referans yap" butonu (onay penceresiyle) ya da CLI'da `--update-baselines`. Uç nokta sadece referans klasörünün içine yazar (path traversal koruması, `test_web` ile test edildi).
+- **Raporda referansın kopyası:** Her koşu, karşılaştırdığı referansın kopyasını kendi klasörüne alır. Referans sonradan güncellense bile eski rapor "neyle karşılaştırıldı" sorusuna doğru cevap verir (K17'deki YAML kopyasıyla aynı izlenebilirlik mantığı).

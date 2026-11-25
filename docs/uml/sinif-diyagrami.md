@@ -65,6 +65,7 @@ classDiagram
         +str kind
         +execute(page, timeout) str?
         +describe() str
+        +evidence() dict
     }
     class GotoStep { +str url }
     class ClickStep { +LocatorSpec spec }
@@ -73,6 +74,16 @@ classDiagram
     class ExpectTextStep { +ValueLocatorSpec spec }
     class ExpectUrlStep { +str url }
     class ScreenshotStep { +Path path }
+    class ExpectScreenshotStep {
+        +str name
+        +Path baseline
+        +bool update
+        +evidence() dict
+    }
+    class visual {
+        <<module>>
+        +compare_images(baseline, actual, diff_out) VisualDiff
+    }
 
     Step <|-- GotoStep
     Step <|-- ClickStep
@@ -81,6 +92,8 @@ classDiagram
     Step <|-- ExpectTextStep
     Step <|-- ExpectUrlStep
     Step <|-- ScreenshotStep
+    Step <|-- ExpectScreenshotStep
+    ExpectScreenshotStep ..> visual
     StepSpec ..> Step : build_steps()
 
     %% ---------- locators.py ----------

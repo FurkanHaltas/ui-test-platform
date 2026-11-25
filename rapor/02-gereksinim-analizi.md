@@ -18,8 +18,8 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | FR-10 | Kullanıcı koşu geçmişini görebilmeli, teste ve duruma göre süzebilmeli; her testin son durumu listede görünmeli. | Should | ✅ |
 | FR-11 | Testler komut satırından tek dosya ya da klasör olarak koşturulabilmeli; sonuç çıkış koduyla bildirilmeli (CI için). | Should | ✅ |
 | FR-12 | Web arayüzü: test listesi, canlı doğrulamalı YAML editörü, koşu başlatma, koşu geçmişi ve rapor ekranı. | Must | ✅ |
-| FR-13 | Platformun kendi testleri GitHub Actions'ta her değişiklikte otomatik koşmalı. | Should | ⏳ Aşama 4 |
-| FR-14 | Görsel regresyon: ekran görüntüsünü önceki koşuyla karşılaştırma. | Could | ⏳ Bonus |
+| FR-13 | Platformun kendi testleri GitHub Actions'ta her değişiklikte otomatik koşmalı. | Should | 🟡 İş akışı hazır, GitHub'a yüklenince doğrulanacak |
+| FR-14 | Görsel regresyon: ekran görüntüsünü önceki koşuyla karşılaştırma. | Could | ✅ (bonus) |
 | FR-15 | Kaydedici: tarayıcıda yapılan işlemleri YAML teste çevirme. | Could | ⏳ Bonus |
 | FR-16 | Yapay zekâ ile kalan testin hatasını açıklama. | Could | ⏳ Bonus |
 | FR-17 | Tekrar deneme / flaky işareti, zamanlanmış testler, veri odaklı testler, bildirim. | Could | ⏳ Bonus |
@@ -37,7 +37,7 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | NFR-06 | İzlenebilirlik | Bir koşunun hangi test tanımıyla yapıldığı sonradan değişmemeli. | Koşu, YAML'ın kopyasını saklar (K17). |
 | NFR-07 | Sürdürülebilirlik | Yeni adım tipi eklemek koşucuyu değiştirmemeli; kod savunmada satır satır açıklanabilir olmalı. | Command pattern (K4), ORM'siz düz SQL (K16), Türkçe yorumlar. |
 | NFR-08 | Taşınabilirlik ve kurulum | Python 3.11+ olan her makinede birkaç komutla kurulmalı; ek veritabanı sunucusu gerektirmemeli. | SQLite tek dosya; README'de 4 komutluk kurulum. Windows'ta geliştirildi, yollar platformdan bağımsız (`as_posix`). |
-| NFR-09 | Test edilebilirlik | Kodun önemli kısımları otomatik testlerle doğrulanmalı. | 69 birim + entegrasyon testi (bkz. 2.5). |
+| NFR-09 | Test edilebilirlik | Kodun önemli kısımları otomatik testlerle doğrulanmalı. | 86 test: 66 birim, 12 entegrasyon, 8 E2E (bkz. 5. bölüm). |
 
 ## 2.3 Kullanıcı hikâyeleri ve kabul kriterleri
 
@@ -116,7 +116,7 @@ Kabul kriterleri *Verilen – Olduğunda – O zaman* (Given–When–Then) kal�
 | Gereksinim | Kullanıcı hikâyesi | Otomatik testler |
 |-----------|--------------------|------------------|
 | FR-01 | US-1 | `test_dsl` (geçerli tanım, varsayılanlar, örnek dosyalar) |
-| FR-02 | US-1 | `test_dsl` (18 hata senaryosu), `test_api::test_invalid_yaml_returns_422_with_turkish_errors`, `test_api::test_validate_endpoint` |
+| FR-02 | US-1 | `test_dsl` (19 hata senaryosu), `test_api::test_invalid_yaml_returns_422_with_turkish_errors`, `test_api::test_validate_endpoint` |
 | FR-03 | US-2 | `test_worker::test_worker_runs_passing_test`, `test_demo_site::test_v1_examples_pass` |
 | FR-04 | US-6 | `test_worker::test_worker_records_failure_with_screenshot_and_trace`, `test_dsl::test_custom_timeouts_and_step_timeout` |
 | FR-05 | US-3 | `test_worker::test_worker_records_failure_with_screenshot_and_trace`, `test_demo_site::test_v2_order_total_bug_is_caught` |
@@ -126,5 +126,6 @@ Kabul kriterleri *Verilen – Olduğunda – O zaman* (Given–When–Then) kal�
 | FR-09 | US-3 | `test_api::test_run_detail_has_result_and_artifact_urls` |
 | FR-10 | US-4 | `test_api::test_list_runs_filters`, `test_db::test_last_run_status_on_test` |
 | FR-11 | US-5 | `test_cli` |
-| FR-12 | US-1…4 | `test_web` (12 test: formlar, yönlendirmeler, hata gösterimi, XSS kaçışı, rapor, süzgeç); tarayıcıyla E2E ⏳ Aşama 4 |
-| FR-13 | US-5 | ⏳ Aşama 4 |
+| FR-12 | US-1…4 | `test_web` (12 test: formlar, yönlendirmeler, hata gösterimi, XSS kaçışı, rapor, süzgeç); E2E-1…6 (`test_platform_e2e`) |
+| FR-13 | US-5 | `.github/workflows/ci.yml` (ilk CI koşusu GitHub'a yüklenince) |
+| FR-14 | — | `test_visual` (6 test), E2E-8 `test_visual_regression_flow` |

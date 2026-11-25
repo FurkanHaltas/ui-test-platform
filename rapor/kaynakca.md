@@ -34,5 +34,11 @@
 27. Microsoft. *Playwright — Page.goto (wait_until seçenekleri)*. https://playwright.dev/python/docs/api/class-page#page-goto
 28. MDN Web Docs. *303 See Other*. https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
 
+29. Microsoft. *Playwright — Pytest Plugin Reference* (pytest-playwright). https://playwright.dev/python/docs/test-runners
+30. pytest-html. *pytest-html Documentation*. https://pytest-html.readthedocs.io/
+31. GitHub. *GitHub Actions Documentation — Building and testing Python*. https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python
+32. Python Pillow. *ImageChops ("Channel Operations") Module*. https://pillow.readthedocs.io/en/stable/reference/ImageChops.html
+33. Mapbox. *pixelmatch* (görsel karşılaştırma için değerlendirilen alternatif). https://github.com/mapbox/pixelmatch
+
 ## Test hedefi
-29. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.
+34. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.

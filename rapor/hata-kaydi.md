@@ -15,6 +15,8 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 | H-07 | 25.11.2026 | 3 | Örnek YAML doğrulaması | ✅ |
 | H-08 | 25.11.2026 | 3 | Web arayüzünden canlı koşu | ✅ |
 | H-09 | 25.11.2026 | 3 | Rapor sayfasının elle incelenmesi | ✅ |
+| H-10 | 25.11.2026 | 4 | E2E testi | ✅ |
+| H-11 | 25.11.2026 | 4 | Test sırası denemesi | ✅ |
 
 ---
 
@@ -74,3 +76,17 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 - **Belirti:** Canlı doğrulama hataları editörün altında gösteriliyordu ama editör 22 satır yüksekliğinde olduğu için hata kutusu ilk ekranda görünmüyordu.
 - **Çözüm:** Editör 15 satıra indirildi (gerekirse kullanıcı büyütebilir). Kod parçalarının satır sonunda bölünmesi de düzeltildi.
 - **Doğrulama:** `rapor/ekran-goruntuleri/03-editor-canli-dogrulama.png`.
+
+## H-10 — Koşu süzgeci "Tüm testler" seçiliyken JSON hatası veriyordu
+- **Belirti:** Koşular sayfasında sadece durum seçip ("Kaldı") test seçimini "Tüm testler"de bırakınca sayfa yerine ham bir hata göründü: `{"detail":[{"type":"int_parsing","loc":["query","test_id"], ...}]}`.
+- **Nasıl bulundu:** Platformun kendi E2E testi (`test_run_history_can_be_filtered_by_status`), ilk koşusunda. Web birim testleri süzgeci hep bir test seçerek denediği için bu durumu kaçırmıştı.
+- **Kök neden:** HTML formu seçilmemiş alanı boş metin olarak gönderir (`test_id=`). Sayfanın parametresi `Optional[int]` tanımlıydı; FastAPI boş metni sayıya çeviremeyip 422 döndü.
+- **Çözüm:** Parametre metin olarak alınıp elle çevriliyor: sayı değilse "tüm testler" sayılıyor.
+- **Doğrulama:** `test_web::test_runs_filter_form_with_all_tests_selected` (yeni birim testi) ve E2E testi.
+- **Ders:** Birim testleri programcının aklına gelen girdileri dener; E2E testi ise tarayıcının gerçekte gönderdiğini. Test piramidinde üst katmanın neden gerekli olduğunun somut örneği.
+
+## H-11 — E2E testleri önce koşunca entegrasyon testleri çöktü
+- **Belirti:** `pytest tests/e2e tests/integration` sırasıyla çalıştırılınca worker testi `error` durumuyla bitti: *"It looks like you are using Playwright Sync API inside the asyncio loop."*
+- **Kök neden:** pytest-playwright, ilk E2E testinden sonra test oturumu boyunca kendi Playwright örneğini (ve onun olay döngüsünü) açık tutuyor. Motorun aynı süreçte açtığı ikinci senkron Playwright buna izin vermiyor. Varsayılan sırada (birim → entegrasyon → E2E) sorun görünmüyordu, yani hata klasör sırasına bağlı, gizli bir kırılganlıktı.
+- **Çözüm:** `tests/conftest.py` içindeki küçük bir pytest kancası (`pytest_collection_modifyitems`) E2E testlerini komut satırındaki sıra ne olursa olsun her zaman en sona alıyor. E2E testlerinde motor zaten ayrı bir süreçte (worker) çalıştığı için etkilenmiyor.
+- **Doğrulama:** Ters sırayla tekrar koşuldu: 2/2 geçti.

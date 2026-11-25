@@ -73,3 +73,8 @@ python -m api.seed                                # örnek testleri DB'ye yükle
 - `goto` `wait_until="domcontentloaded"` kullanır (yavaş dış sitelerde gereksiz zaman aşımını önler).
 - Önizleme: `~/.claude/launch.json` içinde `ui-test-api` kaydı. Worker'ı ayrıca başlat; motor kodu değişince worker'ı yeniden başlat.
 
+## Aşama 4 notları
+- `python -m pytest` = birim + entegrasyon + E2E (~1,5 dk). Raporlar `reports/` (gitignore). Sadece hızlı: `python -m pytest tests/unit -o addopts=""`.
+- E2E (`tests/e2e/`): conftest sunucu + worker'ı geçici klasörde ayrı süreç olarak başlatır. pytest-playwright yüzünden E2E her zaman en sona sıralanır (`tests/conftest.py`, H-11); E2E içinde motoru aynı süreçte çağırma, worker'a koşturt.
+- CI: `.github/workflows/ci.yml` (Ubuntu, dış site yok). Özet: `.github/scripts/test_ozeti.py`.
+- Görsel regresyon: `expectScreenshot`, `engine/visual.py` (Pillow), referanslar `data/baselines/<slug>/`. Web'de "yeni referans yap" = `POST /runs/{id}/steps/{n}/accept`.
