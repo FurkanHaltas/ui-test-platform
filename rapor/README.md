@@ -45,6 +45,7 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | | Test sonuçları | ✅ | 5.6: yerel koşu + ilk CI koşusu, `reports/test-raporu.html`, CI ekran görüntüsü |
 | | Tespit edilen ve giderilen hatalar | ✅ | [hata-kaydi.md](hata-kaydi.md) (11 kayıt), özeti 5.7 |
 | **6. Sonuç ve değerlendirme** | Gerçekleşen gereksinimler, sorunlar, çözümler, sınırlılıklar, iyileştirmeler | 🟡 | Gereksinim tablosu, hata kaydı, kapsam dışı listesi, ROADMAP bonusları |
+| | Sınırlılık notu | 🟡 | **Test kâhini (oracle) problemi:** platform sadece kullanıcının tanımladığı beklentileri kontrol eder, siteyi gezip iş kuralı hatalarını kendi başına bulamaz (doğrunun ne olduğunu bilemez). Görsel regresyon sorulmayan görsel değişiklikleri yakalayarak bunu kısmen genişletir. İyileştirme: konsol/ağ hatalarının otomatik yakalanması (ROADMAP). |
 | **7. Kaynakça** | | ✅ | [kaynakca.md](kaynakca.md) (sürekli güncellenir) |
 
 ### 3. Sunum (10–15 dk, uygulama canlı test edilecek)

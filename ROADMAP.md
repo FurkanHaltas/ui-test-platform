@@ -26,3 +26,4 @@ Rapor son haftaya bırakılmaz; her aşama kendi bölümünü `rapor/` klasörü
 - [ ] Kaydedici (Playwright codegen çıktısını YAML'a çeviren dönüştürücü)
 - [ ] Yapay zekâ ile hata açıklama
 - [ ] Küçük eklemeler: tekrar deneme / flaky işareti, zamanlanmış testler, veri odaklı testler, bildirim
+- [ ] Otomatik hata yakalama: her koşuda, test yazılmadan, sayfanın JavaScript konsol hatalarını ve başarısız ağ isteklerini (404/500) kaydedip raporda gösterme (Playwright `page.on("console")`, `page.on("response")`). Not: 25.11.2026 tur sırasında konuşuldu.
