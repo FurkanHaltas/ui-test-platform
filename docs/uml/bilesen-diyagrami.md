@@ -1,11 +1,14 @@
-# Bileşen Diyagramı (Aşama 2 sonu)
+# Bileşen Diyagramı (Aşama 3 sonu)
 
 ```mermaid
 flowchart LR
-    U([Kullanıcı / istemci]) -- "HTTP JSON" --> API
-    subgraph S1["Süreç 1: uvicorn"]
-        API["api/main.py<br/>FastAPI"]
+    U([Kullanıcı<br/>tarayıcı]) -- "HTML formlar" --> WEB
+    X([Diğer sistemler]) -- "HTTP JSON" --> API
+    subgraph S1["Süreç 1: uvicorn (tek FastAPI uygulaması)"]
+        WEB["web/routes.py<br/>Jinja2 sayfaları"]
+        API["api/main.py<br/>JSON API"]
         Static["/artifacts<br/>StaticFiles"]
+        Demo["/demo · /demo-v2<br/>demo_site/"]
     end
     subgraph S2["Süreç 2: python -m worker"]
         W["worker/main.py<br/>kuyruk döngüsü"]
@@ -25,7 +28,13 @@ flowchart LR
     E -- "ekran görüntüsü, trace" --> FS
     Static -- "okur" --> FS
     API -. "parse_test (doğrulama)" .-> E
+    WEB -- "api/db.py" --> DB
+    WEB -. "parse_test" .-> E
+    U -. "editör canlı doğrulama<br/>POST /api/validate" .-> API
+    PW -. "yerel demo testleri" .-> Demo
 ```
 
 - API ile worker **ayrı süreçlerdir** ve birbirleriyle doğrudan konuşmaz. Tek ortak noktaları veritabanı ve `artifacts/` klasörüdür.
-- Aşama 3'te web arayüzü, Aşama 4'te CI bu resme eklenecek.
+- Web sayfaları ile JSON API aynı süreçte çalışır ve aynı veritabanı modülünü kullanır (K24).
+- Demo sitesi de aynı sunucudan yayınlanır; demo testlerinde "hedef site" odur (K25).
+- Aşama 4'te CI bu resme eklenecek.

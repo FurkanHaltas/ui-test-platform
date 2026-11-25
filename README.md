@@ -2,11 +2,13 @@
 
 BİLS403 Yazılım Mühendisliği final projesi. Web uygulamalarının uçtan uca (E2E) testlerini **kod yazmadan, YAML ile** tanımlayıp gerçek bir tarayıcıda (Playwright + Chromium) çalıştıran platform.
 
-> Durum: **Aşama 1 (test motoru)** ve **Aşama 2 (API + SQLite + worker)** tamam. Web arayüzü ve CI sonraki aşamalarda (bkz. [ROADMAP.md](ROADMAP.md)).
+> Durum: **MVP tamam** — test motoru, API + SQLite + worker, web arayüzü ve yerel demo sitesi (Aşama 1–3). Sırada platformun kendi E2E testleri ve CI var (bkz. [ROADMAP.md](ROADMAP.md)).
 
 ```
-İstemci ──HTTP──▶ API (FastAPI) ──▶ SQLite (tests, runs = kuyruk) ◀── Worker ──▶ Test motoru ──▶ Chromium ──▶ Hedef site
-                       └──── /artifacts (ekran görüntüleri, trace) ◀──────────────────┘
+Tarayıcı ──▶ Web arayüzü ┐
+                         ├─▶ SQLite (tests, runs = kuyruk) ◀── Worker ──▶ Test motoru ──▶ Chromium ──▶ Hedef site
+İstemci  ──▶ JSON API  ──┘                                                     │
+             /artifacts (ekran görüntüleri, trace) ◀───────────────────────────┘
 ```
 
 ## Kurulum (Windows / PowerShell)
@@ -21,7 +23,43 @@ python -m playwright install chromium
 > PowerShell betik çalıştırmayı engellerse bir kez şunu çalıştırın:
 > `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
 
-## Kullanım
+## Hızlı başlangıç (web arayüzü + demo)
+
+İki ayrı terminal açın, ikisinde de önce `.venv\Scripts\Activate.ps1` çalıştırın.
+
+```powershell
+uvicorn api.main:app --reload
+```
+```powershell
+python -m worker
+```
+
+İlk seferde örnek testleri yükleyin:
+
+```powershell
+python -m api.seed
+```
+
+Sonra tarayıcıda <http://127.0.0.1:8000> adresini açın.
+
+| Sayfa | Ne yapılır |
+|-------|-----------|
+| **Testler** (`/`) | Testleri listele, son durumlarını gör, tek tek ya da hepsini koştur |
+| **Test editörü** (`/tests/{id}`) | YAML yaz; yazarken canlı doğrulama, Ctrl+S ile kaydet |
+| **Koşular** (`/runs`) | Koşu geçmişi, teste ve duruma göre süzme |
+| **Rapor** (`/runs/{id}`) | Adım adım sonuç, kalan adımın ekran görüntüsü, trace indirme |
+| **Demo site** (`/demo/`, `/demo-v2/`) | Testlerin koşturulduğu yerel mağaza (internet gerekmez) |
+| **API** (`/docs`) | JSON API belgeleri ve deneme ekranı |
+
+### Demo sitesi (Mini Market)
+İnternete bağımlı olmadan canlı demo yapmak için `demo_site/` klasöründe küçük bir mağaza var. Aynı sunucu bunu iki adreste yayınlar:
+- `/demo/` — **Sürüm 1.0**, doğru çalışır.
+- `/demo-v2/` — **Sürüm 2.0**, sepette birden fazla ürün varken toplamı **bilerek yanlış** hesaplar.
+
+Örnek testler `examples/demo/` altında. "Demo - Sipariş akışı (Sürüm 1.0)" geçer; aynı test Sürüm 2.0'a karşı 10. adımda (sepet toplamı) kalır.
+Demo hesapları: `demo` / `demo123`, kilitli hesap: `kilitli` / `demo123`.
+
+## Komut satırı (CLI)
 
 ```powershell
 python -m engine run examples/login.yaml          # tek test
@@ -37,22 +75,7 @@ Her koşunun çıktısı `artifacts/<tarih-saat>_<test-adı>/` altına yazılır
 python -m playwright show-trace artifacts\<klasör>\trace.zip
 ```
 
-## Platform: API + worker (Aşama 2)
-
-İki ayrı terminalde çalıştırın (ikisinde de önce `.venv\Scripts\Activate.ps1`):
-
-```powershell
-uvicorn api.main:app --reload
-```
-```powershell
-python -m worker
-```
-
-Örnek testleri veritabanına yüklemek için (bir kez):
-
-```powershell
-python -m api.seed
-```
+## JSON API
 
 API belgeleri ve deneme ekranı: <http://127.0.0.1:8000/docs>
 
@@ -111,8 +134,10 @@ steps:
 | `api/` | FastAPI uygulaması (`main.py`), veritabanı katmanı (`db.py`), modeller (`schemas.py`), `seed.py` |
 | `worker/` | Kuyruk işleyici (`python -m worker`) |
 | `tests/unit/` | Birim testleri (DSL, veritabanı, API) |
-| `tests/integration/` | Worker + gerçek Chromium testi (yerel sayfaya karşı) |
+| `web/` | Web arayüzü: `routes.py`, `templates/` (Jinja2), `static/` (CSS, editör betiği) |
+| `demo_site/` | Yerel demo mağaza (HTML + JS, sunucusuz) |
+| `tests/integration/` | Worker ve demo sitesi testleri (gerçek Chromium, yerel sayfalara karşı) |
 | `docs/` | [Tasarım kararları](docs/kararlar.md), [UML diyagramları](docs/uml/) |
 | `rapor/` | Teslim dokümanının bölümleri, hata kaydı, kaynakça ([durum tablosu](rapor/README.md)) |
 | `data/` | SQLite veritabanı (git'e girmez) |
-| `web/`, `tests/e2e/` | Sonraki aşamalar |
+| `tests/e2e/` | Sonraki aşama |

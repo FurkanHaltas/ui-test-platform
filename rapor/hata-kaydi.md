@@ -12,6 +12,9 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 | H-04 | 25.11.2026 | 2 | Entegrasyon testi | ✅ |
 | H-05 | 25.11.2026 | 2 | Seed betiğinin çalıştırılması | ✅ |
 | H-06 | 25.11.2026 | 2 | Birim testi uyarısı | 🔓 |
+| H-07 | 25.11.2026 | 3 | Örnek YAML doğrulaması | ✅ |
+| H-08 | 25.11.2026 | 3 | Web arayüzünden canlı koşu | ✅ |
+| H-09 | 25.11.2026 | 3 | Rapor sayfasının elle incelenmesi | ✅ |
 
 ---
 
@@ -49,3 +52,25 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 - **Belirti:** API testleri çalışırken Starlette uyarısı: test istemcisinin `httpx` ile kullanımı kullanımdan kaldırılıyor, `httpx2` öneriliyor.
 - **Durum:** Testler doğru çalışıyor; uyarı `pytest.ini` içinde gizlendi. Paket değişikliği, önerilen paket doğrulanmadan yapılmadı (tedarik zinciri güvenliği: bilinmeyen paket kurmamak).
 - **Yapılacak:** Aşama 4'te bağımlılıklar gözden geçirilirken ele alınacak.
+
+## H-07 — Virgüllü değer "bilinmeyen alan" hatası veriyordu
+- **Belirti:** `- fill: { label: Adres, value: Atatürk Cad. No 1, Ankara }` satırı "12. adım (fill): bilinmeyen alan 'Ankara'" hatası verdi.
+- **Kök neden:** YAML'ın süslü parantezli yazımında virgül alan ayırıcıdır. `Ankara` değeri olmayan yeni bir alan sanıldı. Hata mesajı doğruydu ama kullanıcıya ne yapacağını söylemiyordu. Bu hatayı ilk kez platformun kendi doğrulayıcısı, örnek test yazılırken yakaladı.
+- **Çözüm:** Değer tırnak içine alındı. Ayrıca doğrulayıcı, değeri boş olan bilinmeyen bir alan gördüğünde ipucu veriyor: *"değerde virgül varsa değeri tırnak içine alın, ör. value: "a, b""*. Editörün kısa rehberine de bu not eklendi.
+- **Doğrulama:** `test_dsl::test_unquoted_comma_gives_hint`.
+
+## H-08 — Yavaş dış sitede testler daha sayfa açılırken kaldı
+- **Belirti:** Web arayüzünden "Tümünü koştur" yapıldığında saucedemo.com testlerinin üçü 1. adımda kaldı: `goto: zaman aşımı`. "Bilerek kalan test" de planlanan 5. adım yerine 1. adımda kaldı. Aynı anda yerel demo sitesinin testleri sorunsuz geçti.
+- **Kök neden:** İki sorun üst üste geldi:
+  1. `page.goto` varsayılan olarak sayfanın **tüm** kaynaklarının (resimler, dış betikler) yüklenmesini, yani `load` olayını bekliyordu. saucedemo o gün yavaştı (ana sayfa 4,1 sn), bu yüzden 10 sn'lik adım süresi aşıldı.
+  2. `bilerek-kalan.yaml` hatayı çabuk göstermek için `stepTimeout: 3000` kullanıyordu. Bu kısa süre, kalması gereken adıma değil bütün adımlara, sayfa açılışına da uygulanıyordu.
+- **Çözüm:**
+  1. `goto` artık sadece HTML'in hazır olmasını (`domcontentloaded`) bekliyor. Sonraki adımlar zaten öğeleri kendileri beklediği için (auto-wait) güvenilirlik azalmadı.
+  2. Örnekte kısa süre sadece kalması gereken adıma verildi: `expectText: { ..., timeout: 3000 }`.
+- **Doğrulama:** Aynı gün yeniden koşuldu. saucedemo testleri 1,3–2,7 sn'de geçti, bilerek kalan test 5. adımda kaldı.
+- **Ders:** Dış bir siteye bağlı testler, testi yazanın kontrolü dışındaki nedenlerle kalabilir (ağ, sitenin yükü). Sunum demosunun internetten bağımsız yerel demo sitesiyle yapılması kararının (K25) somut gerekçesi budur.
+
+## H-09 — Uzun editörde hata kutusu ekranın dışında kalıyordu
+- **Belirti:** Canlı doğrulama hataları editörün altında gösteriliyordu ama editör 22 satır yüksekliğinde olduğu için hata kutusu ilk ekranda görünmüyordu.
+- **Çözüm:** Editör 15 satıra indirildi (gerekirse kullanıcı büyütebilir). Kod parçalarının satır sonunda bölünmesi de düzeltildi.
+- **Doğrulama:** `rapor/ekran-goruntuleri/03-editor-canli-dogrulama.png`.

@@ -21,7 +21,8 @@ Ekran görüntüleri ve trace dosyaları `artifacts/` altına yazılır.
 ## Klasörler
 - `engine/` test motoru: `dsl.py`, `locators.py`, `steps.py`, `runner.py`, `results.py`, `cli.py`
 - `api/` FastAPI + `db.py` (SQLite), `worker/` kuyruk işleyici, `tests/integration/` worker testi
-- `web/`, `tests/e2e/` sonraki aşamalar
+- `web/` Jinja2 web arayüzü (`routes.py`, `templates/`, `static/`), `demo_site/` yerel demo mağaza (/demo, /demo-v2)
+- `tests/e2e/` sonraki aşama
 - `examples/` örnek YAML testleri
 - `tests/unit/` motorun birim testleri
 - `docs/` `kararlar.md` (tasarım kararları, rapor için) ve `uml/` (Mermaid diyagramları)
@@ -55,7 +56,7 @@ Ekran görüntüleri ve trace dosyaları `artifacts/` altına yazılır.
 python -m engine run examples/login.yaml          # tek test
 python -m engine run examples/ --headed           # klasördeki tüm testler, tarayıcı görünür
 python -m pytest                                  # birim + entegrasyon testleri
-uvicorn api.main:app --reload                     # API (http://127.0.0.1:8000/docs)
+uvicorn api.main:app --reload                     # web arayüzü http://127.0.0.1:8000 , API /docs
 python -m worker                                  # kuyruk işleyici (ayrı terminal)
 python -m api.seed                                # örnek testleri DB'ye yükle
 ```
@@ -65,3 +66,10 @@ python -m api.seed                                # örnek testleri DB'ye yükle
 - Testler geçici DB kullanır: `tests/conftest.py` içindeki `conn` fixture'ı `UITP_DB`'yi ayarlar.
 - Motor dosya yollarını `as_posix()` ile yazar; API bunları `/artifacts/...` URL'lerine çevirir.
 - Bu makinede indirilen Chromium görünür modda açılmıyor: `--headed` için `--channel chrome` kullan.
+
+## Aşama 3 notları
+- Web sayfaları `api/db.py`'yi doğrudan kullanır; doğrulama her yerde `engine.dsl.parse_test`. Formlar POST → 303 (PRG).
+- Demo sitesi `demo_site/`, `/demo` (1.0) ve `/demo-v2` (2.0, sepet toplamı bilerek hatalı) altında aynı API sunucusundan yayınlanır. Örnekleri `examples/demo/`.
+- `goto` `wait_until="domcontentloaded"` kullanır (yavaş dış sitelerde gereksiz zaman aşımını önler).
+- Önizleme: `~/.claude/launch.json` içinde `ui-test-api` kaydı. Worker'ı ayrıca başlat; motor kodu değişince worker'ı yeniden başlat.
+

@@ -114,3 +114,34 @@ Her karar için: **ne** seçildi, **neden**, **alternatif** neydi.
 - **Birim (DSL, DB, API):** Tarayıcı açmaz, bir saniyenin altında biter. Her test geçici bir veritabanı kullanır (`UITP_DB` ortam değişkeni).
 - **Entegrasyon (worker):** Gerçek Chromium ile, internete bağımlı olmadan, testin kendi açtığı yerel HTML sayfasına karşı çalışır.
 - **Platformun kendi E2E testleri:** Aşama 4'te.
+
+---
+
+# Tasarım Kararları (Aşama 3 — Web Arayüzü ve Demo Sitesi)
+
+## K23. Sunucu tarafında üretilen sayfalar (Jinja2), SPA değil
+- **Ne:** Sayfalar FastAPI içinde Jinja2 şablonlarıyla üretilir. Formlar klasik HTML formudur. JavaScript sadece editördeki canlı doğrulama için kullanılır (`web/static/editor.js`, ~70 satır).
+- **Neden:** React/Vue gibi bir tek sayfa uygulaması (SPA) ikinci bir dil, derleme adımı (npm, bundler) ve ayrı bir proje getirirdi. Sunucu tarafı sayfalar tek dilde (Python) kalır, her satırı açıklanabilir ve JavaScript kapalıyken bile çalışır.
+- **Bedel:** Koşu sürerken sayfa canlı güncellenmek yerine birkaç saniyede bir yenilenir (K26). Bu ölçekte kullanıcı farkı hissetmez.
+
+## K24. Web sayfaları veritabanına doğrudan erişir, doğrulama motorda
+- **Ne:** Web rotaları (`web/routes.py`) kendi JSON API'mize HTTP isteği atmaz; aynı `api/db.py` fonksiyonlarını çağırır. Doğrulama her yerde motorun `parse_test` fonksiyonuyla yapılır.
+- **Neden:** Aynı süreç içinde kendine HTTP isteği atmak gereksiz bir katmandır. Kurallar ve Türkçe hata mesajları tek yerde (`engine/dsl.py`) olduğu için CLI, API ve web hep aynı cevabı verir.
+- **Post/Redirect/Get:** Form gönderilince işlem yapılır ve `303` ile yeni sayfaya yönlendirilir. Kullanıcı sayfayı yenilediğinde test ikinci kez kaydedilmez veya kuyruğa alınmaz.
+- **Güvenlik:** Kullanıcının yazdığı YAML sayfaya basılırken Jinja2 otomatik olarak kaçışlar (`<` → `&lt;`). Canlı doğrulamada mesajlar `textContent` ile eklenir. Bu sayede YAML'a yazılan `<script>` çalışmaz (XSS koruması, `test_web::test_user_text_is_escaped`).
+
+## K25. Yerel demo sitesi, iki sürüm
+- **Ne:** `demo_site/` klasöründe sunucusuz küçük bir mağaza (Mini Market) var. Aynı API sunucusu bunu iki adreste yayınlar: `/demo` (Sürüm 1.0, doğru) ve `/demo-v2` (Sürüm 2.0, sepet toplamı bilerek hatalı). Sürümü JavaScript adres çubuğundan anlar.
+- **Neden:**
+  - Hocanın şartı: uygulama sunumda canlı test edilecek. Sınıfta internet olmasa da, saucedemo.com o gün yavaş ya da değişmiş olsa da (bkz. H-08) demo çalışmalı.
+  - İki sürüm, platformun asıl amacını gösteren bir hikâye kurar: "yeni sürüm yayına alınmadan test edildi, regresyon yakalandı."
+- **Gerçekçilik:** Giriş 0,6 sn, ürün listesi 0,4 sn gecikmeyle gelir. Testler sabit bekleme olmadan, Playwright'ın otomatik beklemesiyle geçer; K7'deki kararın canlı kanıtı.
+- **Test kimlikleri:** Demo sitesi Playwright'ın varsayılanı olan `data-testid` özniteliğini kullanır, örneklerde `testIdAttribute` gerekmez.
+
+## K26. Koşu sırasında otomatik yenileme (`meta refresh`)
+- **Ne:** Rapor sayfası koşu `queued`/`running` durumundayken 2 sn'de, koşu listesi 3 sn'de bir kendini yeniler. Koşu bitince yenileme durur.
+- **Neden:** Tek satır HTML'dir, JavaScript gerektirmez. WebSocket veya Server-Sent Events gerçek zamanlı olurdu ama hem sunucuda hem istemcide ek kod ister.
+
+## K27. `goto` sadece HTML'in hazır olmasını bekler
+- **Ne:** `page.goto(..., wait_until="domcontentloaded")`.
+- **Neden:** Varsayılan `load` olayı, resimler ve reklam/analitik betikleri gibi testi ilgilendirmeyen bütün kaynakları bekler. Yavaş bir sitede testi gereksiz yere kaldırıyordu (H-08). Sonraki adımlar öğeleri zaten kendileri beklediği için güvenilirlik kaybı olmaz.

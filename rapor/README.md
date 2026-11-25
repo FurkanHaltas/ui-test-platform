@@ -12,12 +12,12 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 ### 1. Çalışan yazılım uygulaması
 | Kriter | Durum | Nerede |
 |--------|-------|--------|
-| Temel işlevler çalışıyor | ✅ | Motor, API, worker; web arayüzü ⏳ Aşama 3 |
+| Temel işlevler çalışıyor | ✅ | Motor, API, worker, web arayüzü |
 | Veri saklama | ✅ | SQLite (`data/platform.db`), JSON sonuçlar, `artifacts/` |
-| Arayüz (web/CLI/API) | ✅ | CLI + REST API; web ⏳ Aşama 3 |
-| En az 3 fonksiyonel gereksinim | ✅ | 11 gereksinim gerçekleşti → [02-gereksinim-analizi.md](02-gereksinim-analizi.md) |
+| Arayüz (web/CLI/API) | ✅ | Web arayüzü + CLI + REST API |
+| En az 3 fonksiyonel gereksinim | ✅ | 12 gereksinim gerçekleşti → [02-gereksinim-analizi.md](02-gereksinim-analizi.md) |
 | En az bir hata/istisna yönetimi | ✅ | Türkçe doğrulama hataları, 404/422, timeout, `failed`/`error` ayrımı |
-| Otomatik testler | ✅ | 53 test (`python -m pytest`) |
+| Otomatik testler | ✅ | 69 test (`python -m pytest`): 63 birim, 6 entegrasyon (gerçek Chromium) |
 | Sürüm kontrolü | 🟡 | Yerel git var; **GitHub'a yüklenecek** (Aşama 4) |
 | Kurulum/çalıştırma belgesi | ✅ | [../README.md](../README.md) |
 
@@ -29,7 +29,7 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | | ≥3 kullanıcı hikâyesi + kabul kriterleri | ✅ | aynı dosya (6 hikâye, testlere bağlı) |
 | | MoSCoW önceliklendirme | ✅ | aynı dosya |
 | **3. Yazılım tasarımı** | Mimari | 🟡 | [bileşen diyagramı](../docs/uml/bilesen-diyagrami.md), README'deki şema |
-| | Teknolojiler ve seçim gerekçeleri | 🟡 | [kararlar.md](../docs/kararlar.md) (K10, K14–K16 vb.) |
+| | Teknolojiler ve seçim gerekçeleri | 🟡 | [kararlar.md](../docs/kararlar.md) (K10, K14–K16, K23 vb.) |
 | | UML use case | ✅ | [use-case-diyagrami.md](../docs/uml/use-case-diyagrami.md) |
 | | UML sınıf / bileşen | ✅ | [sinif-diyagrami.md](../docs/uml/sinif-diyagrami.md), [bilesen-diyagrami.md](../docs/uml/bilesen-diyagrami.md) |
 | | Sequence | ✅ | [motor](../docs/uml/sequence-test-kosturma.md), [API üzerinden](../docs/uml/sequence-api-kosu.md) |
@@ -38,7 +38,7 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | | Temel algoritmalar | 🟡 | kararlar K2 (doğrulama), K7 (timeout hesabı), K15 (atomik kuyruk) |
 | | API / modül yapısı | 🟡 | README uç nokta tablosu, `/docs` (Swagger) |
 | | Önemli kod bölümleri | ⬜ | Aşama 5'te seçilecek: `claim_next_run`, `_run_step`, `build_locator`, `_parse_step` |
-| | Ekran görüntüleri | ⏳ | Aşama 3 (web arayüzü), Swagger, CLI çıktısı |
+| | Ekran görüntüleri | ✅ | [ekran-goruntuleri/](ekran-goruntuleri/) (8 görüntü, açık tema); CLI çıktısı Aşama 5'te |
 | **5. Yazılım testleri** | Test stratejisi | 🟡 | kararlar K22 |
 | | Birim / entegrasyon testleri | ✅ | `tests/unit`, `tests/integration` |
 | | Fonksiyonel test senaryoları | 🟡 | Kabul kriterleri + `examples/*.yaml`; E2E ⏳ Aşama 4 |
@@ -50,7 +50,7 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 ### 3. Sunum (10–15 dk, uygulama canlı test edilecek)
 | Konu | Durum |
 |------|-------|
-| İnternetten bağımsız yerel demo sitesi | ⏳ Aşama 3 sonu (saucedemo erişilemezse demo çökmesin) |
-| Demo senaryosu (geçen + bilerek kalan test, hatalı YAML) | 🟡 `examples/` hazır |
+| İnternetten bağımsız yerel demo sitesi | ✅ `/demo` (Sürüm 1.0) ve `/demo-v2` (bilerek hatalı 2.0), bkz. K25 |
+| Demo senaryosu | 🟡 Malzeme hazır: `examples/demo/`, editörde canlı doğrulama, 2.0 regresyonu. Senaryo metni ve prova Aşama 5'te |
 | Görünür tarayıcı: `--channel chrome` | ⚠️ bkz. [H-02](hata-kaydi.md) |
 | Slaytlar | ⏳ Aşama 5 |

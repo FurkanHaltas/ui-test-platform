@@ -28,6 +28,11 @@
 21. pytest. *pytest Documentation* (fixtures, monkeypatch). https://docs.pytest.org/
 22. Mermaid. *Mermaid Diagram Syntax*. https://mermaid.js.org/
 23. PlantUML. *Use Case Diagram*. https://plantuml.com/use-case-diagram
+24. Pallets. *Jinja Documentation* (şablonlar, otomatik HTML kaçışı). https://jinja.palletsprojects.com/
+25. FastAPI. *Templates* (Jinja2Templates). https://fastapi.tiangolo.com/advanced/templates/
+26. OWASP. *Cross Site Scripting Prevention Cheat Sheet*. https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html
+27. Microsoft. *Playwright — Page.goto (wait_until seçenekleri)*. https://playwright.dev/python/docs/api/class-page#page-goto
+28. MDN Web Docs. *303 See Other*. https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
 
 ## Test hedefi
-24. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.
+29. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.
