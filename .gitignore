@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Test çıktıları (ekran görüntüsü, trace, sonuç JSON)
+artifacts/*
+!artifacts/.gitkeep
+
+# Editör / işletim sistemi
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
