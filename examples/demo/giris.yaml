@@ -1,0 +1,13 @@
+# Yerel demo sitesi: başarılı giriş. Önce API sunucusu çalışmalı (uvicorn api.main:app).
+# Giriş 0,6 sn, ürün listesi 0,4 sn gecikmeyle gelir; test sabit bekleme kullanmadan geçer.
+name: Demo - Başarılı giriş
+baseUrl: http://127.0.0.1:8000/demo
+steps:
+  - goto: /
+  - fill: { label: Kullanıcı adı, value: demo }
+  - fill: { label: Şifre, value: demo123 }
+  - click: { role: button, name: Giriş yap }
+  - expectUrl: /urunler.html
+  - expectVisible: { role: heading, name: Ürünler }
+  - expectVisible: { testId: urun-kulaklik }
+  - screenshot: urunler

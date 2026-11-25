@@ -247,6 +247,10 @@ def _translate_error(err: dict) -> str:
     if kind == "missing":
         return f"'{field}' alanı zorunlu ama verilmemiş"
     if kind == "extra_forbidden":
+        if err.get("input") is None:
+            # `{ value: Cad. No 1, Ankara }` -> YAML virgülden sonrasını değeri boş yeni bir alan sanar.
+            return (f"bilinmeyen alan '{field}' — değerde virgül varsa değeri tırnak içine alın, "
+                    f'ör. value: "a, b"')
         return f"bilinmeyen alan '{field}'"
     if kind == "string_type":
         return f"'{field}' metin olmalı"

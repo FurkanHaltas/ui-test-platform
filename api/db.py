@@ -64,6 +64,15 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+def get_conn():
+    """FastAPI bağımlılığı (Depends): her istek kendi bağlantısını alır, istek bitince kapanır."""
+    conn = connect()
+    try:
+        yield conn
+    finally:
+        conn.close()
+
+
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
 

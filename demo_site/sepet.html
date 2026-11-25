@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Market · Sepet</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="ust">
+    <strong>Mini Market</strong>
+    <nav><a href="urunler.html">← Alışverişe dön</a></nav>
+  </header>
+  <main class="kutu">
+    <h1>Sepetim</h1>
+
+    <section id="sepet-bolumu">
+      <p class="soluk" id="bos-sepet" hidden>Sepetiniz boş.</p>
+      <table id="sepet-tablosu">
+        <thead><tr><th>Ürün</th><th>Adet</th><th>Fiyat</th></tr></thead>
+        <tbody id="satirlar"></tbody>
+        <tfoot><tr><th colspan="2">Toplam</th><th data-testid="sepet-toplami" id="toplam">0 TL</th></tr></tfoot>
+      </table>
+
+      <form id="siparis-formu" novalidate>
+        <h2>Teslimat bilgileri</h2>
+        <label for="ad">Ad soyad</label>
+        <input id="ad" data-testid="ad-soyad">
+        <label for="adres">Adres</label>
+        <textarea id="adres" rows="2" data-testid="adres"></textarea>
+        <button type="submit">Siparişi tamamla</button>
+        <p role="alert" class="hata" data-testid="form-hatasi" hidden></p>
+      </form>
+    </section>
+
+    <section id="sonuc" hidden>
+      <h2 data-testid="siparis-sonucu">Siparişiniz alındı!</h2>
+      <p>Sipariş numaranız: <strong data-testid="siparis-no" id="siparis-no"></strong></p>
+      <a href="urunler.html">Alışverişe devam et</a>
+    </section>
+  </main>
+  <footer class="surum" data-testid="surum"></footer>
+  <script src="app.js"></script>
+  <script>MiniMarket.cartPage();</script>
+</body>
+</html>

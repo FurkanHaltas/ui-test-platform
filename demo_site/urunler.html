@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Market · Ürünler</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="ust">
+    <strong>Mini Market</strong>
+    <nav>
+      <a href="sepet.html" data-testid="sepet-linki">Sepet <span class="rozet" data-testid="sepet-sayaci">0</span></a>
+      <button type="button" class="bag" id="cikis">Çıkış</button>
+    </nav>
+  </header>
+  <main class="kutu">
+    <h1>Ürünler</h1>
+    <p class="soluk" id="yukleniyor">Ürünler yükleniyor…</p>
+    <div class="izgara" id="urunler"></div>
+  </main>
+  <footer class="surum" data-testid="surum"></footer>
+  <script src="app.js"></script>
+  <script>MiniMarket.productsPage();</script>
+</body>
+</html>

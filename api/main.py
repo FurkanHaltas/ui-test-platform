@@ -12,13 +12,15 @@ import json
 import sqlite3
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from api import db
+from api.artifacts import add_artifact_urls
+from api.db import get_conn
 from api.schemas import RunDetailOut, RunOut, TestIn, TestOut, ValidationOut
 from engine.dsl import DslError, TestDefinition, parse_test
 
@@ -44,15 +46,6 @@ app = FastAPI(
 # Ekran görüntüleri ve trace dosyaları: /artifacts/runs/5/.../hata-adim-3.png
 ARTIFACTS_DIR.mkdir(exist_ok=True)
 app.mount("/artifacts", StaticFiles(directory=ARTIFACTS_DIR), name="artifacts")
-
-
-def get_conn() -> Iterator[sqlite3.Connection]:
-    """Her istek kendi veritabanı bağlantısını alır, istek bitince kapanır."""
-    conn = db.connect()
-    try:
-        yield conn
-    finally:
-        conn.close()
 
 
 def validate_or_422(yaml_text: str) -> TestDefinition:
@@ -164,18 +157,3 @@ def get_run(run_id: int, conn=Depends(get_conn)):
     result_json = data.pop("result_json")
     data["result"] = add_artifact_urls(json.loads(result_json)) if result_json else None
     return data
-
-
-def add_artifact_urls(result: dict) -> dict:
-    """Motorun yazdığı dosya yollarını (artifacts/runs/5/x.png) tarayıcıda açılabilir
-    adreslere (/artifacts/runs/5/x.png) çevirip `*_url` alanlarına ekler."""
-    for step in result.get("steps", []):
-        step["screenshot_url"] = to_url(step.get("screenshot"))
-    result["trace_url"] = to_url(result.get("trace"))
-    return result
-
-
-def to_url(path: Optional[str]) -> Optional[str]:
-    if not path:
-        return None
-    return "/" + path.replace("\\", "/").lstrip("/")

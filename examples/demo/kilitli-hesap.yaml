@@ -1,0 +1,11 @@
+# Yerel demo sitesi: kilitli kullanıcı giriş yapamaz, hata mesajı görür.
+name: Demo - Kilitli hesap
+baseUrl: http://127.0.0.1:8000/demo
+steps:
+  - goto: /
+  - fill: { label: Kullanıcı adı, value: kilitli }
+  - fill: { label: Şifre, value: demo123 }
+  - click: { role: button, name: Giriş yap }
+  - expectText: { testId: hata-mesaji, value: Bu hesap kilitlendi. Lütfen destek ile iletişime geçin. }
+  - expectUrl: /
+  - screenshot: kilitli-hesap

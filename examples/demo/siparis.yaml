@@ -1,0 +1,19 @@
+# Yerel demo sitesi: uçtan uca sipariş akışı (Sürüm 1.0). İki ürün -> toplam 3.650 TL.
+name: Demo - Sipariş akışı (Sürüm 1.0)
+baseUrl: http://127.0.0.1:8000/demo
+steps:
+  - goto: /
+  - fill: { label: Kullanıcı adı, value: demo }
+  - fill: { label: Şifre, value: demo123 }
+  - click: { role: button, name: Giriş yap }
+  - click: { testId: sepete-ekle-kulaklik }
+  - click: { testId: sepete-ekle-klavye }
+  - expectText: { testId: sepet-sayaci, value: "2" }
+  - click: { testId: sepet-linki }
+  - expectUrl: /sepet.html
+  - expectText: { testId: sepet-toplami, value: 3.650 TL }
+  - fill: { label: Ad soyad, value: Ayşe Yılmaz }
+  - fill: { label: Adres, value: "Atatürk Cad. No 1, Ankara" }
+  - click: { role: button, name: Siparişi tamamla }
+  - expectText: { testId: siparis-sonucu, value: Siparişiniz alındı! }
+  - screenshot: siparis-tamamlandi

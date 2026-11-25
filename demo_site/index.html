@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Market · Giriş</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="kutu dar">
+    <h1>Mini Market</h1>
+    <p class="soluk">Platformun canlı demosu için hazırlanmış örnek mağaza.</p>
+
+    <form id="giris-formu" novalidate>
+      <label for="kullanici">Kullanıcı adı</label>
+      <input id="kullanici" data-testid="kullanici-adi" autocomplete="username">
+
+      <label for="sifre">Şifre</label>
+      <input id="sifre" type="password" data-testid="sifre" autocomplete="current-password">
+
+      <button type="submit" id="giris-butonu">Giriş yap</button>
+      <p role="alert" class="hata" data-testid="hata-mesaji" hidden></p>
+    </form>
+
+    <p class="ipucu">Demo hesap: <code>demo</code> / <code>demo123</code> · Kilitli hesap: <code>kilitli</code> / <code>demo123</code></p>
+  </main>
+  <footer class="surum" data-testid="surum"></footer>
+  <script src="app.js"></script>
+  <script>MiniMarket.loginPage();</script>
+</body>
+</html>

@@ -116,6 +116,12 @@ def test_unknown_field_in_step():
     assert "bilinmeyen alan 'color'" in msg
 
 
+def test_unquoted_comma_gives_hint():
+    msg = errors_of(HEADER + "  - fill: { label: Adres, value: Cad. No 1, Ankara }\n")
+    assert "bilinmeyen alan 'Ankara'" in msg
+    assert "tırnak içine" in msg
+
+
 def test_step_with_two_types():
     msg = errors_of(HEADER + "  - goto: /\n    click: { text: Login }\n")
     assert "1. adım" in msg
