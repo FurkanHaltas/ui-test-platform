@@ -4,7 +4,14 @@ API testleri kendisi koşturmaz. "Koştur" isteği sadece runs tablosuna 'queued
 ekler ve hemen döner (202 Accepted). Asıl işi ayrı bir süreç olan worker yapar.
 Böylece uzun süren tarayıcı işleri API'yi kilitlemez.
 
+Aynı uygulama ayrıca şunları sunar:
+  /            web arayüzü (web/routes.py, Jinja2 şablonları)
+  /demo/       yerel demo sitesi Sürüm 1.0 (demo_site/)
+  /demo-v2/    aynı site, Sürüm 2.0 (bilerek hatalı)
+  /artifacts/  ekran görüntüleri ve trace dosyaları
+
 Çalıştırma:  uvicorn api.main:app --reload
+Arayüz:      http://127.0.0.1:8000
 Belgeler:    http://127.0.0.1:8000/docs
 """
 
@@ -15,7 +22,6 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Query
-from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from api import db
@@ -23,8 +29,10 @@ from api.artifacts import add_artifact_urls
 from api.db import get_conn
 from api.schemas import RunDetailOut, RunOut, TestIn, TestOut, ValidationOut
 from engine.dsl import DslError, TestDefinition, parse_test
+from web.routes import router as web_router
 
 ARTIFACTS_DIR = Path("artifacts")
+ROOT_DIR = Path(__file__).resolve().parent.parent  # proje kökü
 
 
 @asynccontextmanager
@@ -39,13 +47,20 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Otomatik UI Test Platformu",
     description="YAML ile tanımlanan E2E testlerini kaydeder, kuyruğa alır ve sonuçlarını sunar.",
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
 # Ekran görüntüleri ve trace dosyaları: /artifacts/runs/5/.../hata-adim-3.png
 ARTIFACTS_DIR.mkdir(exist_ok=True)
 app.mount("/artifacts", StaticFiles(directory=ARTIFACTS_DIR), name="artifacts")
+app.mount("/static", StaticFiles(directory=ROOT_DIR / "web" / "static"), name="static")
+# Demo sitesi iki adreste: aynı dosyalar, sürümü JavaScript adres çubuğundan anlıyor.
+app.mount("/demo", StaticFiles(directory=ROOT_DIR / "demo_site", html=True), name="demo")
+app.mount("/demo-v2", StaticFiles(directory=ROOT_DIR / "demo_site", html=True), name="demo-v2")
+
+# Web arayüzü sayfaları (/, /tests/..., /runs/...)
+app.include_router(web_router)
 
 
 def validate_or_422(yaml_text: str) -> TestDefinition:
@@ -66,12 +81,6 @@ def test_or_404(conn, test_id: int) -> sqlite3.Row:
 # ---------------------------------------------------------------------------
 # Genel
 # ---------------------------------------------------------------------------
-
-@app.get("/", include_in_schema=False)
-def root():
-    # Web arayüzü Aşama 3'te gelecek; şimdilik API belgelerine yönlendir.
-    return RedirectResponse("/docs")
-
 
 @app.get("/api/health", tags=["genel"])
 def health(conn=Depends(get_conn)):

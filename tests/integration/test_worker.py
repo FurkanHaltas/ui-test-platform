@@ -7,7 +7,7 @@ yayınlıyoruz. Headless Chromium açtığı için birim testlerinden yavaştır
 import json
 import threading
 from functools import partial
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -36,7 +36,7 @@ def site(tmp_path):
     root = tmp_path / "site"
     root.mkdir()
     (root / "index.html").write_text(PAGE, encoding="utf-8")
-    server = HTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(root)))
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(QuietHandler, directory=str(root)))
     threading.Thread(target=server.serve_forever, daemon=True).start()
     yield f"http://127.0.0.1:{server.server_port}"
     server.shutdown()

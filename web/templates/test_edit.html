@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge %}
+{% set nav = "tests" %}
+{% block title %}{{ test.name if test else "Yeni test" }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <a href="/" class="back">← Testler</a>
+    <h1>{{ test.name if test else "Yeni test" }}</h1>
+  </div>
+  {% if test %}
+  <div class="actions">
+    <form method="post" action="/tests/{{ test.id }}/run"><button type="submit" class="btn btn-primary">▶ Koştur</button></form>
+    <form method="post" action="/tests/{{ test.id }}/delete"
+          onsubmit="return confirm('Bu test ve tüm koşu kayıtları silinsin mi?')">
+      <button type="submit" class="btn btn-danger">Sil</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+
+{% if saved %}<p class="flash" role="status">✓ Kaydedildi.</p>{% endif %}
+
+<div class="editor-layout">
+  <section>
+    <form method="post" action="{{ '/tests/%d' % test.id if test else '/tests/new' }}" id="editor-form">
+      <label for="yaml" class="label">Test tanımı (YAML)</label>
+      <textarea id="yaml" name="yaml" class="code" rows="22" spellcheck="false">{{ yaml_text }}</textarea>
+
+      <div id="validation" class="validation {% if errors %}is-invalid{% endif %}" aria-live="polite">
+        {% if errors %}
+          <strong>Test tanımı geçersiz:</strong>
+          <ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Kaydet</button>
+        <span class="muted small">Ctrl+S ile de kaydedebilirsiniz. "Koştur" kayıtlı sürümü çalıştırır.</span>
+      </div>
+    </form>
+  </section>
+
+  <aside>
+    {% if test %}
+    <h2>Son koşular</h2>
+    {% if runs %}
+    <ul class="run-list">
+      {% for r in runs %}
+      <li><a href="/runs/{{ r.id }}">#{{ r.id }}</a> {{ badge(r.status) }}
+          <span class="muted small">{{ r.created_at|time }} · {{ r.duration_ms|ms }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">Henüz koşulmadı.</p>{% endif %}
+    {% endif %}
+
+    <h2>Kısa rehber</h2>
+    <dl class="cheatsheet">
+      <dt><code>goto: /yol</code></dt><dd>Sayfaya git (baseUrl'e eklenir)</dd>
+      <dt><code>click: {locator}</code></dt><dd>Tıkla</dd>
+      <dt><code>fill: {locator, value: …}</code></dt><dd>Kutuya yaz</dd>
+      <dt><code>expectVisible: {locator}</code></dt><dd>Görünür olmalı</dd>
+      <dt><code>expectText: {locator, value: …}</code></dt><dd>Metni tam olarak bu olmalı</dd>
+      <dt><code>expectUrl: /yol</code></dt><dd>Adres bu olmalı</dd>
+      <dt><code>screenshot: ad</code></dt><dd>Ekran görüntüsü al</dd>
+    </dl>
+    <p class="small"><strong>Locator</strong> (her adımda tam olarak biri):<br>
+      <code>role: button, name: Giriş yap</code> · <code>label: Şifre</code> · <code>testId: sepet-sayaci</code> ·
+      <code>text: Ürünler</code> · <code>css: "#id"</code></p>
+    <p class="small muted">İsteğe bağlı: kökte <code>timeout</code>, <code>stepTimeout</code> (ms), <code>testIdAttribute</code>;
+      adımda <code>timeout</code>. Virgül içeren değerleri tırnağa alın.</p>
+  </aside>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="/static/editor.js"></script>{% endblock %}

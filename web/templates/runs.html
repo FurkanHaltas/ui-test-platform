@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge, worker_hint %}
+{% set nav = "runs" %}
+{% set auto_refresh = 3 if has_active else None %}
+{% block title %}Koşular{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Koşular</h1>
+    <p class="muted">Son 100 koşu{% if has_active %} · sayfa 3 sn'de bir yenileniyor{% endif %}</p>
+  </div>
+  <form method="get" action="/runs" class="filters">
+    <label class="sr-only" for="f-test">Test</label>
+    <select name="test_id" id="f-test">
+      <option value="">Tüm testler</option>
+      {% for t in tests %}
+      <option value="{{ t.id }}" {% if test_id == t.id %}selected{% endif %}>{{ t.name }}</option>
+      {% endfor %}
+    </select>
+    <label class="sr-only" for="f-status">Durum</label>
+    <select name="status" id="f-status">
+      <option value="">Tüm durumlar</option>
+      {% for key in ["queued", "running", "passed", "failed", "error"] %}
+      <option value="{{ key }}" {% if status == key %}selected{% endif %}>{{ STATUS_LABELS[key] }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn">Süz</button>
+  </form>
+</div>
+
+{% if has_active %}{{ worker_hint() }}{% endif %}
+
+{% if runs %}
+<table class="table">
+  <thead><tr><th>#</th><th>Test</th><th>Durum</th><th>Başlangıç</th><th class="right">Süre</th><th>Hata</th></tr></thead>
+  <tbody>
+    {% for r in runs %}
+    <tr>
+      <td><a href="/runs/{{ r.id }}">#{{ r.id }}</a></td>
+      <td><a href="/runs/{{ r.id }}" class="strong">{{ r.test_name }}</a></td>
+      <td>{{ badge(r.status) }}</td>
+      <td class="muted">{{ (r.started_at or r.created_at)|time }}</td>
+      <td class="right">{{ r.duration_ms|ms }}</td>
+      <td class="error-cell" title="{{ r.error or '' }}">{{ r.error or "" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty"><p>Bu süzgece uyan koşu yok.</p></div>
+{% endif %}
+{% endblock %}

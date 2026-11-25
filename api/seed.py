@@ -1,4 +1,4 @@
-"""Örnek testleri (examples/*.yaml) veritabanına yükler. Demo için.
+"""Örnek testleri (examples/demo/*.yaml ve examples/*.yaml) veritabanına yükler. Demo için.
 
     python -m api.seed
 
@@ -17,7 +17,9 @@ def main() -> None:
     conn = db.connect()
     db.init_db(conn)
     existing = {row["name"] for row in db.list_tests(conn)}
-    for path in sorted(Path("examples").glob("*.yaml")):
+    # Önce internetsiz demo sitesinin testleri, sonra saucedemo.com testleri.
+    paths = sorted(Path("examples/demo").glob("*.yaml")) + sorted(Path("examples").glob("*.yaml"))
+    for path in paths:
         try:
             test = load_test(path)
         except DslError as e:

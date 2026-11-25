@@ -1,0 +1,13 @@
+{# Tekrar kullanılan küçük parçalar #}
+
+{% macro badge(status) -%}
+  {%- if status -%}
+    <span class="badge badge-{{ status }}">{{ STATUS_LABELS.get(status, status) }}</span>
+  {%- else -%}
+    <span class="badge badge-none">Koşulmadı</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro worker_hint() -%}
+  <p class="hint">Koşu sırada bekliyorsa worker çalışmıyor olabilir. Ayrı bir terminalde: <code>python -m worker</code></p>
+{%- endmacro %}

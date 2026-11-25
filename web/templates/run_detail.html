@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge, worker_hint %}
+{% set nav = "runs" %}
+{% set active = run.status in ("queued", "running") %}
+{% set auto_refresh = 2 if active else None %}
+{% block title %}Koşu #{{ run.id }}{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <a href="/runs" class="back">← Koşular</a>
+    <h1>Koşu #{{ run.id }} · {{ run.test_name }}</h1>
+  </div>
+  <div class="actions">
+    <a href="/tests/{{ run.test_id }}" class="btn">Testi düzenle</a>
+    <form method="post" action="/tests/{{ run.test_id }}/run"><button type="submit" class="btn btn-primary">▶ Tekrar koştur</button></form>
+  </div>
+</div>
+
+<section class="summary summary-{{ run.status }}">
+  <div class="summary-status">{{ badge(run.status) }}</div>
+  <dl>
+    <div><dt>Kuyruğa alındı</dt><dd>{{ run.created_at|time }}</dd></div>
+    <div><dt>Başladı</dt><dd>{{ run.started_at|time }}</dd></div>
+    <div><dt>Bitti</dt><dd>{{ run.finished_at|time }}</dd></div>
+    <div><dt>Süre</dt><dd>{{ run.duration_ms|ms }}</dd></div>
+    {% if result %}<div><dt>Hedef</dt><dd><a href="{{ result.base_url }}" target="_blank" rel="noopener">{{ result.base_url }}</a></dd></div>{% endif %}
+  </dl>
+</section>
+
+{% if active %}
+  <p class="progress" role="status">{% if run.status == "queued" %}Sırada, worker'ın almasını bekliyor…{% else %}Tarayıcıda koşuyor…{% endif %}
+    Sayfa otomatik yenileniyor.</p>
+  {% if run.status == "queued" %}{{ worker_hint() }}{% endif %}
+{% endif %}
+
+{% if run.error %}
+<div class="error-box" role="alert">
+  <strong>{% if run.status == "error" %}Test çalıştırılamadı (platform hatası){% else %}Testin kaldığı yer{% endif %}</strong>
+  <p>{{ run.error }}</p>
+</div>
+{% endif %}
+
+{% if result %}
+<h2>Adımlar</h2>
+<table class="table steps">
+  <thead><tr><th>#</th><th>Adım</th><th>Durum</th><th class="right">Süre</th></tr></thead>
+  <tbody>
+    {% for s in result.steps %}
+    <tr class="step-{{ s.status }}">
+      <td>{{ s.number }}</td>
+      <td>
+        <code>{{ s.description }}</code>
+        {% if s.error %}<div class="step-error">{{ s.error }}</div>{% endif %}
+        {% if s.screenshot_url %}
+        <a href="{{ s.screenshot_url }}" target="_blank" rel="noopener" class="shot">
+          <img src="{{ s.screenshot_url }}" alt="{{ s.number }}. adımın ekran görüntüsü" loading="lazy">
+        </a>
+        {% endif %}
+      </td>
+      <td>{{ badge(s.status) }}</td>
+      <td class="right">{{ s.duration_ms|ms if s.status != "skipped" else "—" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% if result.trace_url %}
+<section class="trace">
+  <h2>Trace (adım adım kayıt)</h2>
+  <p>Her adımda sayfanın görüntüsü, DOM'u ve ağ istekleri bu dosyada. <a href="{{ result.trace_url }}" download class="btn btn-small">trace.zip indir</a></p>
+  <p class="small muted">Açmak için dosyayı <a href="https://trace.playwright.dev" target="_blank" rel="noopener">trace.playwright.dev</a> sayfasına sürükleyin (dosya bilgisayarınızdan çıkmaz) ya da:
+    <code>python -m playwright show-trace {{ result.trace }}</code></p>
+</section>
+{% endif %}
+{% endif %}
+
+<details class="yaml-snapshot">
+  <summary>Koşturulan test tanımı (kuyruğa alındığı andaki YAML)</summary>
+  <pre class="code">{{ run.yaml }}</pre>
+</details>
+{% endblock %}

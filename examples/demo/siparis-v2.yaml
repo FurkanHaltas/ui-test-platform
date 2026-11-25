@@ -2,6 +2,7 @@
 # Beklenen: 10. adım (sepet toplamı) KALIR. "Yeni sürümü yayına almadan önce test ettik" demosu.
 name: Demo - Sipariş akışı (Sürüm 2.0)
 baseUrl: http://127.0.0.1:8000/demo-v2
+stepTimeout: 4000   # kalan adımı sunumda çabuk görmek için (varsayılan 10 sn)
 steps:
   - goto: /
   - fill: { label: Kullanıcı adı, value: demo }

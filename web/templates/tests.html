@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "_macros.html" import badge, worker_hint %}
+{% set nav = "tests" %}
+{% block title %}Testler{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>Testler</h1>
+    <p class="muted">{{ tests|length }} test{% if active_runs %} · {{ active_runs }} koşu sırada / koşuyor{% endif %}</p>
+  </div>
+  <div class="actions">
+    {% if tests %}
+    <form method="post" action="/run-all"><button type="submit" class="btn">Tümünü koştur</button></form>
+    {% endif %}
+    <a href="/tests/new" class="btn btn-primary">+ Yeni test</a>
+  </div>
+</div>
+
+{% if active_runs %}{{ worker_hint() }}{% endif %}
+
+{% if tests %}
+<table class="table">
+  <thead>
+    <tr><th>Test</th><th>Son durum</th><th>Güncellendi</th><th class="right">İşlem</th></tr>
+  </thead>
+  <tbody>
+    {% for t in tests %}
+    <tr>
+      <td><a href="/tests/{{ t.id }}" class="strong">{{ t.name }}</a></td>
+      <td>
+        {% if t.last_run_id %}<a href="/runs/{{ t.last_run_id }}">{{ badge(t.last_run_status) }}</a>
+        {% else %}{{ badge(None) }}{% endif %}
+      </td>
+      <td class="muted">{{ t.updated_at|time }}</td>
+      <td class="right">
+        <form method="post" action="/tests/{{ t.id }}/run" class="inline">
+          <button type="submit" class="btn btn-small" aria-label="Koştur: {{ t.name }}">▶ Koştur</button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty">
+  <p><strong>Henüz test yok.</strong></p>
+  <p>İlk testinizi yazın ya da örnekleri yükleyin: <code>python -m api.seed</code></p>
+  <a href="/tests/new" class="btn btn-primary">+ Yeni test</a>
+</div>
+{% endif %}
+{% endblock %}

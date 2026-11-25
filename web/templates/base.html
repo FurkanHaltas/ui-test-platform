@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% if auto_refresh %}<meta http-equiv="refresh" content="{{ auto_refresh }}">{% endif %}
+  <title>{% block title %}{% endblock %} · UI Test Platformu</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a href="/" class="brand">UI Test Platformu</a>
+    <nav>
+      <a href="/" {% if nav == "tests" %}aria-current="page"{% endif %}>Testler</a>
+      <a href="/runs" {% if nav == "runs" %}aria-current="page"{% endif %}>Koşular</a>
+      <a href="/demo/" target="_blank" rel="noopener">Demo site ↗</a>
+      <a href="/docs" target="_blank" rel="noopener">API ↗</a>
+    </nav>
+  </header>
+  <main class="page">
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
