@@ -16,3 +16,6 @@ Thumbs.db
 
 # Veritabanı
 data/
+
+# Test raporları (pytest)
+reports/

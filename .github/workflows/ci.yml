@@ -1,0 +1,55 @@
+# Sürekli entegrasyon: her push ve pull request'te platformun tüm testleri temiz bir
+# Ubuntu makinesinde koşturulur. Testlerden biri kalırsa iş kırmızı görünür.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:  # Actions sekmesinden elle başlatmak için
+
+jobs:
+  test:
+    name: Testler (birim + entegrasyon + E2E)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Kodu al
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Bağımlılıkları kur
+        run: pip install -r requirements.txt
+
+      - name: Chromium'u kur (sistem kütüphaneleriyle)
+        run: python -m playwright install --with-deps chromium
+
+      - name: Örnek YAML testlerini doğrula
+        run: python -m engine validate examples/ examples/demo/ examples/platform/
+
+      - name: Geçersiz örnek reddedilmeli (çıkış kodu 2)
+        run: |
+          set +e
+          python -m engine validate examples/gecersiz/
+          code=$?
+          test "$code" -eq 2 || { echo "Beklenen çıkış kodu 2, gelen $code"; exit 1; }
+
+      - name: Testleri koştur
+        run: python -m pytest
+
+      - name: Test özetini yaz
+        if: always()
+        run: python .github/scripts/test_ozeti.py reports/junit.xml >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Test raporlarını sakla
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-raporlari
+          path: reports/
+          retention-days: 14
