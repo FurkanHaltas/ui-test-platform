@@ -21,6 +21,8 @@ from engine.results import RunResult, StepResult
 from engine.steps import Step, build_steps
 
 DEFAULT_ARTIFACTS_DIR = Path("artifacts")
+# Görsel regresyon referansları; koşudan koşuya saklanır (artifacts/ ise her koşuda yenidir).
+DEFAULT_BASELINES_DIR = Path("data/baselines")
 
 
 def run_tests(
@@ -28,6 +30,8 @@ def run_tests(
     headed: bool = False,
     artifacts_dir: Path = DEFAULT_ARTIFACTS_DIR,
     channel: Optional[str] = None,
+    baselines_dir: Path = DEFAULT_BASELINES_DIR,
+    update_baselines: bool = False,
 ) -> list[RunResult]:
     """Testleri sırayla koşturur. Tarayıcı bir kez açılır, her test kendi context'ini alır.
 
@@ -41,20 +45,22 @@ def run_tests(
             for test in tests:
                 # testId locator'ının hangi HTML özniteliğine bakacağı (ör. saucedemo: data-test)
                 playwright.selectors.set_test_id_attribute(test.test_id_attribute)
-                results.append(run_test(browser, test, artifacts_dir))
+                results.append(run_test(browser, test, artifacts_dir, baselines_dir, update_baselines))
         finally:
             browser.close()
     return results
 
 
-def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path) -> RunResult:
+def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
+             baselines_dir: Path = DEFAULT_BASELINES_DIR, update_baselines: bool = False) -> RunResult:
     """Tek bir testi koşturur ve sonucunu artifacts/<run_id>/result.json'a yazar."""
     started_at = datetime.now()
     run_id = f"{started_at:%Y%m%d-%H%M%S}_{slugify(test.name)}"
     run_dir = artifacts_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    steps = build_steps(test, run_dir)
+    # Her testin referans görüntüleri kendi klasöründe: data/baselines/<test-adı>/
+    steps = build_steps(test, run_dir, baselines_dir / slugify(test.name), update_baselines)
     step_results: list[StepResult] = []
     run_error: Optional[str] = None
     trace_path: Optional[str] = None
@@ -129,6 +135,7 @@ def _run_step(page, step: Step, test: TestDefinition, deadline: float, run_dir: 
         error = short_error(e)
         screenshot = _failure_screenshot(page, run_dir, step.number)
 
+    fields = {"screenshot": screenshot, **step.evidence()}  # ör. görsel karşılaştırma kanıtları
     return StepResult(
         number=step.number,
         kind=step.kind,
@@ -136,7 +143,7 @@ def _run_step(page, step: Step, test: TestDefinition, deadline: float, run_dir: 
         status="failed" if error else "passed",
         duration_ms=int((time.monotonic() - step_start) * 1000),
         error=error,
-        screenshot=screenshot,
+        **fields,
     )
 
 

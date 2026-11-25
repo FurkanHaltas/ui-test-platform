@@ -119,6 +119,7 @@ STEP_ARG_TYPES: dict[str, Any] = {
     "expectText": ValueLocatorSpec,
     "expectUrl": str,
     "screenshot": str,
+    "expectScreenshot": str,  # görsel regresyon: referans görüntüyle karşılaştır
 }
 
 

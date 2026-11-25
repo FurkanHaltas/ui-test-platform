@@ -161,3 +161,39 @@ def test_platform_tests_its_own_ui_with_its_own_dsl(page: Page, platform):
     run_from_ui(page, test_id)
     expect(summary_badge(page)).to_have_text("Geçti", timeout=RUN_TIMEOUT)
     expect(page.locator("table.steps tbody tr")).to_have_count(9)
+
+
+# --- Bonus: görsel regresyon --------------------------------------------------
+
+def test_visual_regression_flow(page: Page, platform):
+    """Sunumdaki akış: referans oluştur -> yeni sürüme yönlendir -> fark yakalanır ->
+    fark bilinçliyse yeni referans yap -> tekrar koşu geçer."""
+    test_id = api_create_test(platform, example("demo/gorsel-sepet.yaml", platform))
+
+    # 1) İlk koşu referansı oluşturur
+    run_from_ui(page, test_id)
+    expect(summary_badge(page)).to_have_text("Geçti", timeout=RUN_TIMEOUT)
+    expect(page.get_by_text("bu görüntü referans olarak kaydedildi")).to_be_visible()
+
+    # 2) Editörde testi Sürüm 2.0'a yönlendir ve koştur
+    page.goto(f"/tests/{test_id}")
+    editor = page.get_by_label("Test tanımı (YAML)")
+    editor.fill(editor.input_value().replace("/demo\n", "/demo-v2\n"))
+    page.get_by_role("button", name="Kaydet").click()
+    expect(page.get_by_role("status")).to_have_text("✓ Kaydedildi.")
+    page.get_by_role("button", name="▶ Koştur").click()
+
+    expect(summary_badge(page)).to_have_text("Kaldı", timeout=RUN_TIMEOUT)
+    expect(page.locator("tr.step-failed")).to_contain_text("görsel fark")
+    for label in ("Referans", "Bu koşu", "Fark (kırmızı)"):
+        img = page.get_by_alt_text(f"9. adım: {label}")
+        expect(img).to_be_visible()
+        assert img.evaluate("img => img.naturalWidth") > 0
+
+    # 3) Fark bilinçli: yeni referans yap, tekrar koştur -> geçer
+    page.once("dialog", lambda dialog: dialog.accept())
+    page.get_by_role("button", name="Bu görüntüyü yeni referans yap").click()
+    expect(page.get_by_role("status")).to_contain_text("yeni referans olarak kaydedildi")
+    page.get_by_role("button", name="▶ Tekrar koştur").click()
+    expect(summary_badge(page)).to_have_text("Geçti", timeout=RUN_TIMEOUT)
+    expect(page.get_by_text("Referansla fark: %0.000 (0 piksel)")).to_be_visible()

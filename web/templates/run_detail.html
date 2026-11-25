@@ -34,6 +34,8 @@
   {% if run.status == "queued" %}{{ worker_hint() }}{% endif %}
 {% endif %}
 
+{% if accepted %}<p class="flash" role="status">✓ {{ accepted }}. adımın görüntüsü yeni referans olarak kaydedildi. Testi tekrar koşturduğunuzda bu görüntüyle karşılaştırılacak.</p>{% endif %}
+
 {% if run.error %}
 <div class="error-box" role="alert">
   <strong>{% if run.status == "error" %}Test çalıştırılamadı (platform hatası){% else %}Testin kaldığı yer{% endif %}</strong>
@@ -52,7 +54,23 @@
       <td>
         <code>{{ s.description }}</code>
         {% if s.error %}<div class="step-error">{{ s.error }}</div>{% endif %}
-        {% if s.screenshot_url %}
+        {% if s.note and not s.error %}<div class="step-note">{{ s.note }}</div>{% endif %}
+        {% if s.diff_url %}
+        <div class="visual-compare">
+          {% for label, url in [("Referans", s.baseline_url), ("Bu koşu", s.screenshot_url), ("Fark (kırmızı)", s.diff_url)] %}
+          <figure>
+            <a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ url }}" alt="{{ s.number }}. adım: {{ label }}" loading="lazy"></a>
+            <figcaption>{{ label }}</figcaption>
+          </figure>
+          {% endfor %}
+        </div>
+        {% if s.status == "failed" %}
+        <form method="post" action="/runs/{{ run.id }}/steps/{{ s.number }}/accept" class="accept"
+              onsubmit="return confirm('Bu görüntü yeni referans olsun mu? Fark bilinçli bir değişiklikse onaylayın.')">
+          <button type="submit" class="btn btn-small">Bu görüntüyü yeni referans yap</button>
+        </form>
+        {% endif %}
+        {% elif s.screenshot_url %}
         <a href="{{ s.screenshot_url }}" target="_blank" rel="noopener" class="shot">
           <img src="{{ s.screenshot_url }}" alt="{{ s.number }}. adımın ekran görüntüsü" loading="lazy">
         </a>

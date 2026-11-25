@@ -21,6 +21,11 @@ class StepResult(BaseModel):
     duration_ms: int = 0
     error: Optional[str] = None  # sadece başarısız adımda dolu
     screenshot: Optional[str] = None  # screenshot adımı ya da hata anı görüntüsü
+    # Sadece expectScreenshot adımında:
+    note: Optional[str] = None  # ör. "Referansla fark: %0.000 (0 piksel)"
+    baseline: Optional[str] = None  # karşılaştırılan referansın bu koşudaki kopyası
+    diff: Optional[str] = None  # fark görüntüsü (değişen pikseller kırmızı)
+    baseline_source: Optional[str] = None  # asıl referans dosyası ("Referansı güncelle" için)
 
 
 class RunResult(BaseModel):

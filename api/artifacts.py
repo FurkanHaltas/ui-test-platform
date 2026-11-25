@@ -14,8 +14,11 @@ def to_url(path: Optional[str]) -> Optional[str]:
 
 
 def add_artifact_urls(result: dict) -> dict:
-    """Sonuç sözlüğüne her adım için `screenshot_url`, koşu için `trace_url` ekler."""
+    """Sonuç sözlüğüne her adım için `screenshot_url` (görsel adımda `baseline_url`, `diff_url`),
+    koşu için `trace_url` ekler."""
     for step in result.get("steps", []):
         step["screenshot_url"] = to_url(step.get("screenshot"))
+        step["baseline_url"] = to_url(step.get("baseline"))
+        step["diff_url"] = to_url(step.get("diff"))
     result["trace_url"] = to_url(result.get("trace"))
     return result

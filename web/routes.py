@@ -10,6 +10,7 @@ doğrulama için kullanılır (web/static/editor.js); o olmadan da her şey çal
 """
 
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -22,6 +23,7 @@ from api import db
 from api.artifacts import add_artifact_urls
 from api.db import get_conn
 from engine.dsl import DslError, parse_test
+from engine.runner import DEFAULT_BASELINES_DIR
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
 router = APIRouter(include_in_schema=False)  # /docs'ta görünmesin, orası JSON API için
@@ -175,4 +177,26 @@ def run_report_page(request: Request, run_id: int, conn=Depends(get_conn)):
     if run is None:
         raise HTTPException(404, f"{run_id} numaralı koşu bulunamadı")
     result = add_artifact_urls(json.loads(run["result_json"])) if run["result_json"] else None
-    return render(request, "run_detail.html", run=run, result=result)
+    accepted = request.query_params.get("accepted")
+    return render(request, "run_detail.html", run=run, result=result,
+                  accepted=int(accepted) if accepted and accepted.isdigit() else None)
+
+
+@router.post("/runs/{run_id}/steps/{number}/accept")
+def accept_screenshot(run_id: int, number: int, conn=Depends(get_conn)):
+    """Görsel farkın bilinçli bir değişiklik olduğunu onaylar: bu koşunun görüntüsü yeni referans olur."""
+    run = db.get_run(conn, run_id)
+    if run is None or not run["result_json"]:
+        raise HTTPException(404, f"{run_id} numaralı bitmiş koşu bulunamadı")
+    step = next((s for s in json.loads(run["result_json"])["steps"] if s["number"] == number), None)
+    if step is None or step["kind"] != "expectScreenshot" or not step.get("screenshot"):
+        raise HTTPException(400, "Bu adım bir görsel karşılaştırma adımı değil")
+
+    target = Path(step["baseline_source"])
+    # Güvenlik: sadece referans klasörünün içine yazılabilir (yol kaydırma / path traversal önlemi).
+    if not target.resolve().is_relative_to(DEFAULT_BASELINES_DIR.resolve()):
+        raise HTTPException(400, "Geçersiz referans yolu")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(step["screenshot"], target)
+    return redirect(f"/runs/{run_id}?accepted={number}")
+

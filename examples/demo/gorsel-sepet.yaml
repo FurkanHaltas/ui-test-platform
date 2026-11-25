@@ -1,0 +1,17 @@
+# GÖRSEL REGRESYON örneği: sepet sayfasının görüntüsü referansla karşılaştırılır.
+#  1) Bu haliyle koşturun: referans görüntü yoksa oluşturulur, test geçer.
+#  2) Tekrar koşturun: görüntü aynı, test geçer (fark %0).
+#  3) baseUrl'i .../demo-v2 yapıp koşturun: Sürüm 2.0'ın yanlış toplamı görsel farkta
+#     yakalanır; raporda referans / gerçek / fark görüntüleri yan yana görünür.
+name: Demo - Sepet görsel kontrol
+baseUrl: http://127.0.0.1:8000/demo
+steps:
+  - goto: /
+  - fill: { label: Kullanıcı adı, value: demo }
+  - fill: { label: Şifre, value: demo123 }
+  - click: { role: button, name: Giriş yap }
+  - click: { testId: sepete-ekle-kulaklik }
+  - click: { testId: sepete-ekle-klavye }
+  - click: { testId: sepet-linki }
+  - expectVisible: { testId: sepet-toplami }
+  - expectScreenshot: sepet

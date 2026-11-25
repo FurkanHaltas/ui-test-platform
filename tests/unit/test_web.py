@@ -149,3 +149,24 @@ def test_demo_site_is_served_in_two_versions(client):
     assert "Mini Market" in client.get("/demo/").text
     assert "Mini Market" in client.get("/demo-v2/").text
     assert client.get("/demo/app.js").status_code == 200
+
+
+def test_accept_screenshot_refuses_paths_outside_baselines(client, conn):
+    # Kayıttaki referans yolu baselines klasörünün dışını gösterirse yazılmamalı (path traversal).
+    test_id = create(client)
+    run_id = db.create_run(conn, db.get_test(conn, test_id))
+    db.claim_next_run(conn)
+    step = {"number": 1, "kind": "expectScreenshot", "status": "failed", "description": "x",
+            "screenshot": "artifacts/x.png", "baseline_source": "../../kotu.png"}
+    db.finish_run(conn, run_id, "failed", 1, "x", json.dumps({"steps": [step]}))
+    r = client.post(f"/runs/{run_id}/steps/1/accept", follow_redirects=False)
+    assert r.status_code == 400
+
+
+def test_accept_screenshot_only_for_visual_steps(client, conn):
+    test_id = create(client)
+    run_id = db.create_run(conn, db.get_test(conn, test_id))
+    db.claim_next_run(conn)
+    step = {"number": 1, "kind": "click", "status": "failed", "description": "x", "screenshot": "a.png"}
+    db.finish_run(conn, run_id, "failed", 1, "x", json.dumps({"steps": [step]}))
+    assert client.post(f"/runs/{run_id}/steps/1/accept").status_code == 400
