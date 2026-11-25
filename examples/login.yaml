@@ -1,0 +1,12 @@
+# Başarılı giriş: geçerli kullanıcıyla giriş yapılır, ürün listesi görünür.
+name: Başarılı giriş
+baseUrl: https://www.saucedemo.com
+testIdAttribute: data-test   # saucedemo test kimliklerini data-test özniteliğinde tutuyor
+steps:
+  - goto: /
+  - fill: { label: Username, value: standard_user }
+  - fill: { testId: password, value: secret_sauce }
+  - click: { role: button, name: Login }
+  - expectUrl: /inventory.html
+  - expectVisible: { text: Products }
+  - screenshot: urun-listesi

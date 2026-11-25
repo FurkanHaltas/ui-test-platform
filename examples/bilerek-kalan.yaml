@@ -1,0 +1,14 @@
+# BİLEREK KALAN TEST: hata raporlamasını göstermek için.
+# Sayfa başlığı "Products" ama biz "Ürünler" bekliyoruz -> 5. adım kalır,
+# ekran görüntüsü + trace.zip kaydedilir, 6. adım "skipped" olur.
+name: Bilerek kalan test (yanlış başlık beklentisi)
+baseUrl: https://www.saucedemo.com
+testIdAttribute: data-test
+stepTimeout: 3000   # hatayı çabuk görmek için kısa adım süresi
+steps:
+  - goto: /
+  - fill: { label: Username, value: standard_user }
+  - fill: { label: Password, value: secret_sauce }
+  - click: { role: button, name: Login }
+  - expectText: { testId: title, value: Ürünler }
+  - screenshot: buraya-hic-gelinmez

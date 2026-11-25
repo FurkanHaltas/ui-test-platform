@@ -1,0 +1,12 @@
+# Olumsuz senaryo: kilitli kullanıcı giriş yapamamalı ve hata mesajı görmeli.
+name: Kilitli kullanıcı giriş yapamaz
+baseUrl: https://www.saucedemo.com
+testIdAttribute: data-test
+steps:
+  - goto: /
+  - fill: { label: Username, value: locked_out_user }
+  - fill: { label: Password, value: secret_sauce }
+  - click: { role: button, name: Login }
+  - expectText: { testId: error, value: "Epic sadface: Sorry, this user has been locked out." }
+  - expectUrl: /
+  - screenshot: kilitli-hata-mesaji

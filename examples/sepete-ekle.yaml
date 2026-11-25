@@ -1,0 +1,19 @@
+# Sepet akışı: giriş -> ürünü sepete ekle -> sepet sayacı 1 olur -> sepette doğru ürün var.
+name: Ürünü sepete ekleme
+baseUrl: https://www.saucedemo.com
+testIdAttribute: data-test
+timeout: 45000
+stepTimeout: 8000
+steps:
+  - goto: /
+  - fill: { testId: username, value: standard_user }
+  - fill: { testId: password, value: secret_sauce }
+  - click: { testId: login-button }
+  - expectUrl: /inventory.html
+  - click: { testId: add-to-cart-sauce-labs-backpack }
+  - expectText: { testId: shopping-cart-badge, value: "1" }
+  - click: { testId: shopping-cart-link }
+  - expectUrl: /cart.html
+  - expectText: { testId: title, value: Your Cart }
+  - expectText: { testId: inventory-item-name, value: Sauce Labs Backpack }
+  - screenshot: sepet

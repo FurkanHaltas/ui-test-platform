@@ -1,0 +1,10 @@
+# GEÇERSİZ DOSYA: doğrulama hatalarını göstermek için. Tarayıcı açılmadan reddedilir.
+#   python -m engine validate examples/gecersiz/hatali-format.yaml
+name: Hatalı format örneği
+baseUrl: https://www.saucedemo.com
+steps:
+  - goto: /
+  - tikla: { text: Login }                        # bilinmeyen adım tipi
+  - fill: { label: Username }                     # value eksik
+  - click: { text: Login, css: "#login-button" }  # iki locator birden
+  - expectVisible: { timeout: 2000 }              # locator yok
