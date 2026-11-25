@@ -19,3 +19,6 @@ data/
 
 # Test raporları (pytest)
 reports/
+
+# Ders için verilen başlangıç promptu: sadece yerelde tutulur
+Proje Başlama Promptu.txt
