@@ -42,6 +42,13 @@ Ekran görüntüleri ve trace dosyaları `artifacts/` altına yazılır.
 - Playwright'ın kendi bekleme mekanizmasını kullan; sabit `sleep` kullanma.
 - **MVP (aşama 1-3) tamamlanınca kullanıcıya ROADMAP.md'deki bonusları hatırlat.**
 
+## Rapor (dokümantasyon) kuralları
+- Teslim dokümanının malzemesi `rapor/` klasöründe; hocanın şablonuna göre durum tablosu `rapor/README.md`'de. Teknik belgeler `docs/` altında kalır.
+- Bir hata bulunup giderilince `rapor/hata-kaydi.md`'ye ekle (belirti, kök neden, çözüm, doğrulama).
+- Yeni bir kaynak (kütüphane belgesi, makale) kullanılınca `rapor/kaynakca.md`'ye ekle.
+- Bir gereksinim gerçekleşince `rapor/02-gereksinim-analizi.md`'deki durumunu ve izlenebilirlik matrisini güncelle; yeni kabul kriteri yazılırsa onu doğrulayan testi de yaz.
+- Her aşama sonunda `rapor/README.md` durum tablosunu ve ROADMAP'teki doküman görevlerini güncelle.
+
 ## Komutlar
 ```powershell
 .venv\Scripts\Activate.ps1

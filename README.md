@@ -113,5 +113,6 @@ steps:
 | `tests/unit/` | Birim testleri (DSL, veritabanı, API) |
 | `tests/integration/` | Worker + gerçek Chromium testi (yerel sayfaya karşı) |
 | `docs/` | [Tasarım kararları](docs/kararlar.md), [UML diyagramları](docs/uml/) |
+| `rapor/` | Teslim dokümanının bölümleri, hata kaydı, kaynakça ([durum tablosu](rapor/README.md)) |
 | `data/` | SQLite veritabanı (git'e girmez) |
 | `web/`, `tests/e2e/` | Sonraki aşamalar |
