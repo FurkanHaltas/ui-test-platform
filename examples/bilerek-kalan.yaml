@@ -4,11 +4,10 @@
 name: Bilerek kalan test (yanlış başlık beklentisi)
 baseUrl: https://www.saucedemo.com
 testIdAttribute: data-test
-stepTimeout: 3000   # hatayı çabuk görmek için kısa adım süresi
 steps:
   - goto: /
   - fill: { label: Username, value: standard_user }
   - fill: { label: Password, value: secret_sauce }
   - click: { role: button, name: Login }
-  - expectText: { testId: title, value: Ürünler }
+  - expectText: { testId: title, value: Ürünler, timeout: 3000 }   # hatayı çabuk görmek için kısa süre
   - screenshot: buraya-hic-gelinmez

@@ -38,7 +38,7 @@
     {% for r in runs %}
     <tr>
       <td><a href="/runs/{{ r.id }}">#{{ r.id }}</a></td>
-      <td><a href="/runs/{{ r.id }}" class="strong">{{ r.test_name }}</a></td>
+      <td class="name-cell"><a href="/runs/{{ r.id }}" class="strong">{{ r.test_name }}</a></td>
       <td>{{ badge(r.status) }}</td>
       <td class="muted">{{ (r.started_at or r.created_at)|time }}</td>
       <td class="right">{{ r.duration_ms|ms }}</td>

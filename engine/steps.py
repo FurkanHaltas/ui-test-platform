@@ -49,7 +49,9 @@ class GotoStep(Step):
         self.url = url
 
     def execute(self, page, timeout):
-        page.goto(self.url, timeout=timeout)
+        # Sayfanın HTML'i hazır olunca devam et; resim/dış betik gibi tüm kaynakları ("load")
+        # beklemeye gerek yok, çünkü sonraki adımlar öğeleri zaten kendileri bekliyor (auto-wait).
+        page.goto(self.url, timeout=timeout, wait_until="domcontentloaded")
 
     def describe(self):
         return f"goto {self.url}"
