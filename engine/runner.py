@@ -82,7 +82,7 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path) -> Run
             # Trace'i sadece kalan testlerde saklıyoruz; geçen testler için disk harcamıyoruz.
             trace_file = run_dir / "trace.zip"
             context.tracing.stop(path=str(trace_file))
-            trace_path = str(trace_file)
+            trace_path = trace_file.as_posix()
         else:
             context.tracing.stop()
         context.close()
@@ -145,7 +145,7 @@ def _failure_screenshot(page, run_dir: Path, number: int) -> Optional[str]:
     path = run_dir / f"hata-adim-{number}.png"
     try:
         page.screenshot(path=str(path), timeout=5_000)
-        return str(path)
+        return path.as_posix()
     except Exception:
         return None
 

@@ -137,7 +137,7 @@ class ScreenshotStep(Step):
 
     def execute(self, page, timeout):
         page.screenshot(path=str(self.path), timeout=timeout)
-        return str(self.path)
+        return self.path.as_posix()
 
     def describe(self):
         return f"screenshot {self.path.name}"
