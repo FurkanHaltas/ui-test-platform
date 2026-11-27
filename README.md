@@ -102,7 +102,7 @@ Veritabanı: `data/platform.db` (`UITP_DB` ortam değişkeniyle değiştirilebil
 python -m pytest
 ```
 
-102 test: 73 birim (tarayıcısız, ~1 sn), 21 entegrasyon ve 8 E2E (gerçek Chromium, internet gerekmez; toplam ~1,5 dk). E2E testleri sunucuyu ve worker'ı geçici bir klasörde kendileri başlatır; `data/platform.db`'ye dokunmaz.
+111 test: 79 birim (tarayıcısız, ~1 sn), 24 entegrasyon ve 8 E2E (gerçek Chromium, internet gerekmez; toplam ~1,5 dk). E2E testleri sunucuyu ve worker'ı geçici bir klasörde kendileri başlatır; `data/platform.db`'ye dokunmaz.
 Her çalıştırma `reports/test-raporu.html` (tarayıcıda açın) ve `reports/junit.xml` üretir. Ayrıntılar: [rapor/05-yazilim-testleri.md](rapor/05-yazilim-testleri.md).
 
 **CI:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri GitHub Actions'ta (Ubuntu) koşturur.
@@ -122,6 +122,23 @@ Demo: Sürüm 2.0'ın ürünler sayfasında bilerek konmuş 3 sayfa hatası var;
 YAML'ın köküne `retries: 2` yazarsanız kalan test temiz bir tarayıcı oturumuyla baştan en fazla 2 kez daha denenir. Önce kalıp sonra geçen test **"Kararsız"** rozetiyle işaretlenir; önceki denemelerin hata mesajı, ekran görüntüsü ve trace'i raporda "Önceki denemeler" bölümünde saklanır. Tekrar deneme hatayı gizlemez, görünür kılar.
 
 Demo: `examples/demo/kararsiz-kampanya.yaml` (sayfa 0–2 sn rastgele gecikmeyle yüklenir; birkaç kez koşturup farklı sonuçları görün).
+
+## Veri odaklı testler
+
+Aynı adımları farklı verilerle koşturmak için YAML'ın köküne bir `data:` tablosu ekleyin ve adımlarda `${alan}` yer tutucularını kullanın. Her satır ayrı bir alt koşu olur; raporda satır satır sonuç görünür.
+
+```yaml
+data:
+  - { kullanici: kilitli, sifre: demo123, mesaj: "Bu hesap kilitlendi. Lütfen destek ile iletişime geçin." }
+  - { kullanici: demo,    sifre: yanlis,  mesaj: "Kullanıcı adı veya şifre hatalı." }
+steps:
+  - fill: { label: Kullanıcı adı, value: "${kullanici}" }   # süslü parantez içinde tırnak şart
+  - fill: { label: Şifre, value: "${sifre}" }
+  - click: { role: button, name: Giriş yap }
+  - expectText: { testId: hata-mesaji, value: "${mesaj}" }
+```
+
+Örnekler: `examples/demo/hatali-giris-veri.yaml`, `examples/demo/sepet-toplami-veri.yaml` (Sürüm 2.0'da hangi ürün kombinasyonlarında hata çıktığını gösterir).
 
 ## Test formatı (DSL v1)
 

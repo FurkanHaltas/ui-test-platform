@@ -12,9 +12,9 @@ Test piramidi yaklaşımı [4] izlendi: çok sayıda hızlı birim testi, daha a
               ┌─────────┐
               │   E2E   │   8 test · ~48 sn · gerçek sunucu + worker + Chromium
              ┌┴─────────┴┐
-             │Entegrasyon│  21 test · ~58 sn · gerçek Chromium, yerel sayfalar
+             │Entegrasyon│  24 test · ~81 sn · gerçek Chromium, yerel sayfalar
            ┌─┴───────────┴─┐
-           │     Birim     │ 73 test · ~1 sn · tarayıcı yok
+           │     Birim     │ 79 test · ~1 sn · tarayıcı yok
            └───────────────┘
 ```
 
@@ -31,24 +31,25 @@ Test piramidi yaklaşımı [4] izlendi: çok sayıda hızlı birim testi, daha a
 - **Gereksinime bağlılık:** Her kabul kriterinin onu doğrulayan testi vardır (bkz. 2.3 ve 2.5 izlenebilirlik matrisi).
 - **Kendi kendini test etme (dogfooding):** `examples/platform/arayuz.yaml`, platformun web editörünü platformun kendi YAML diliyle test eder. E2E testi bu YAML'ı worker'a koşturur.
 
-## 5.2 Birim testleri (73 test)
+## 5.2 Birim testleri (79 test)
 
 | Dosya | Test sayısı | Kapsam |
 |-------|------------:|--------|
-| `tests/unit/test_dsl.py` | 26 | Geçerli tanım, varsayılanlar, `failOnPageErrors` ve `retries` seçenekleri (0–5 sınırı), örnek dosyaların geçerliliği; 19 hata senaryosu (bilinmeyen adım, eksik/çift locator, `name`'in `role`'süz kullanımı, eksik `value`, bilinmeyen alan, virgül ipucu, YAML sözdizimi hatası ve satır numarası, eksik/geçersiz `baseUrl`, boş adım listesi, negatif timeout, eksik dosya…) |
+| `tests/unit/test_dsl.py` | 31 | Geçerli tanım, varsayılanlar, `failOnPageErrors` ve `retries` seçenekleri (0–5 sınırı), **veri tablosu** (satır üretme ve yer tutucu doldurma, satırda eksik alan, tablosuz yer tutucu, boş tablo, tırnaksız `${...}` ipucu), örnek dosyaların geçerliliği; 19 hata senaryosu (bilinmeyen adım, eksik/çift locator, `name`'in `role`'süz kullanımı, eksik `value`, bilinmeyen alan, virgül ipucu, YAML sözdizimi hatası ve satır numarası, eksik/geçersiz `baseUrl`, boş adım listesi, negatif timeout, eksik dosya…) |
 | `tests/unit/test_db.py` | 11 | **Şema göçü** (eski veritabanına `flaky` sütunu eklenir, veri korunur), kuyruğun ilk giren ilk çıkar (FIFO) çalışması, bir işin iki kez alınamaması, YAML kopyası, yarıda kalan koşuların `error` olması, silmede CASCADE, süzgeçler |
 | `tests/unit/test_api.py` | 9 | CRUD uç noktaları, 422 + Türkçe hata listesi, 404, kuyruğa almada 202, dosya adreslerinin üretilmesi, süzgeçler |
-| `tests/unit/test_web.py` | 18 | Sayfaların açılması, "Kararsız" rozeti ve önceki denemeler, sayfa hataları tablosu (ve içindeki mesajların kaçışlanması), formlar ve 303 yönlendirmeleri, hatalı kayıtta metnin korunması, **XSS kaçışı**, otomatik yenileme, demo sitesinin iki sürümü, görsel referans güncellemede **path traversal koruması** |
+| `tests/unit/test_web.py` | 19 | Sayfaların açılması, veri satırları bölümü, "Kararsız" rozeti ve önceki denemeler, sayfa hataları tablosu (ve içindeki mesajların kaçışlanması), formlar ve 303 yönlendirmeleri, hatalı kayıtta metnin korunması, **XSS kaçışı**, otomatik yenileme, demo sitesinin iki sürümü, görsel referans güncellemede **path traversal koruması** |
 | `tests/unit/test_cli.py` | 4 | Çıkış kodları 0/2, geçersiz dosya varken hiçbir testin koşmaması |
 | `tests/unit/test_helpers.py` | 5 | URL birleştirme, Türkçe karakterli klasör adları, hata mesajı kısaltma, Command nesnelerinin üretilmesi |
 
-## 5.3 Entegrasyon testleri (21 test)
+## 5.3 Entegrasyon testleri (24 test)
 
 | Dosya | Test sayısı | Kapsam |
 |-------|------------:|--------|
 | `tests/integration/test_worker.py` | 3 | Kuyruk → worker → Chromium → veritabanı: geçen test; kalan test (ekran görüntüsü + trace + atlanan adımlar); tarayıcı açılamazsa `error` |
 | `tests/integration/test_demo_site.py` | 3 | Demo örnekleri Sürüm 1.0'da geçer; sipariş testi Sürüm 2.0'da tam olarak sepet toplamı adımında kalır (sunum senaryosunun korunması) |
 | `tests/integration/test_page_errors.py` | 4 | Otomatik sayfa hatası yakalama (B1): Sürüm 1.0'da **sıfır** hata (gürültü filtresi), 2.0'daki üç bilinçli hatanın türüyle yakalanması, `failOnPageErrors` ile testin kalması ve trace'in saklanması, ulaşılamayan sunucu / tekrarlanan hata / favicon gürültüsü |
+| `tests/integration/test_data_driven.py` | 3 | Veri odaklı testler (B3): 4 satırlı hatalı giriş tablosu geçer ve yer tutucular raporda doldurulmuş görünür; sepet tablosunda Sürüm 2.0'da tam olarak farklı iki ürünlü 1. ve 2. satır kalır, aynı üründen iki tane olan 3. satır geçer; Sürüm 1.0'da hepsi geçer |
 | `tests/integration/test_retries.py` | 5 | Tekrar deneme (B2), rastgelelik yerine "N. istekten sonra hazır olan" kontrollü sunucuyla: 2. denemede geçen test kararsız işaretlenir ve 1. denemenin trace/ekran görüntüsü saklanır; hiç geçmeyen test bütün denemeleri kullanır; geçen test tekrar denenmez; `retries` yoksa tek deneme; worker `flaky` bilgisini veritabanına yazar |
 | `tests/integration/test_visual.py` | 6 | Görüntü karşılaştırma fonksiyonu (aynı görüntü, 100 piksellik değişiklik, küçük renk gürültüsü, farklı boyut); demo sitesinde referans oluşturma → aynı sürümde %0 fark → 2.0'da farkın yakalanması; referans güncelleme |
 
@@ -85,10 +86,10 @@ Son tam koşu (27.11.2026, Windows 11, Python 3.12, Chromium 159 headless):
 
 | Katman | Test | Geçti | Kaldı | Süre |
 |--------|-----:|------:|------:|-----:|
-| Birim | 73 | 73 | 0 | ~1 sn |
-| Entegrasyon | 21 | 21 | 0 | ~58 sn |
-| E2E | 8 | 8 | 0 | ~38 sn |
-| **Toplam** | **102** | **102** | **0** | **~97 sn** |
+| Birim | 79 | 79 | 0 | ~1 sn |
+| Entegrasyon | 24 | 24 | 0 | ~81 sn |
+| E2E | 8 | 8 | 0 | ~42 sn |
+| **Toplam** | **111** | **111** | **0** | **~125 sn** |
 
 - Her `python -m pytest` çalıştırması `reports/junit.xml` (makine okur) ve `reports/test-raporu.html` (tarayıcıda açılan tek dosyalık rapor) üretir. Teslimde HTML rapor eklere konacak.
 - **Sürekli entegrasyon:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri temiz bir Ubuntu makinesinde koşturur, YAML örneklerini doğrular, katman katman özet tablo yazar ve raporları 14 gün saklar.

@@ -86,3 +86,4 @@ python -m api.seed                                # örnek testleri DB'ye yükle
 ## Bonus notları
 - B1 (sayfa hatası yakalama): `engine/page_errors.py` (PageErrorCollector), `RunResult.page_errors`, DSL `failOnPageErrors`. Demo 2.0 ürünler sayfasında bilinçli 3 hata (`demo_site/app.js` → addV2PageErrors); 1.0'da 0 hata olmalı (test_page_errors).
 - B2 (tekrar deneme): DSL `retries` (0–5), `engine/runner.py → run_with_retries`, `RunResult.attempt/flaky/previous_attempts`. DB `runs.flaky` + `api/db.py → migrate()` (yeni sütun eklerken buraya göç ekle). Demo `kampanya.html` rastgele; otomatik testlerde rastgelelik kullanma (test_retries'teki kontrollü sunucu).
+- B3 (veri odaklı): DSL `data:` + `${alan}` (`PLACEHOLDER`, `_check_placeholders`, `_substitute`, `TestDefinition.expand_rows`), runner `run_data_driven` (satır başına run_with_retries), `RunResult.rows/data_row`. Web adım tablosu `_macros.html → steps_table(steps, run_id)` makrosunda.

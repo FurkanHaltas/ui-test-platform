@@ -15,9 +15,9 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | Temel işlevler çalışıyor | ✅ | Motor, API, worker, web arayüzü |
 | Veri saklama | ✅ | SQLite (`data/platform.db`), JSON sonuçlar, `artifacts/` |
 | Arayüz (web/CLI/API) | ✅ | Web arayüzü + CLI + REST API |
-| En az 3 fonksiyonel gereksinim | ✅ | 16 gereksinim gerçekleşti (bonuslar FR-14, FR-19, FR-20 dahil) → [02-gereksinim-analizi.md](02-gereksinim-analizi.md) |
+| En az 3 fonksiyonel gereksinim | ✅ | 17 gereksinim gerçekleşti (bonuslar FR-14, FR-19, FR-20, FR-21 dahil) → [02-gereksinim-analizi.md](02-gereksinim-analizi.md) |
 | En az bir hata/istisna yönetimi | ✅ | Türkçe doğrulama hataları, 404/422, timeout, `failed`/`error` ayrımı |
-| Otomatik testler | ✅ | 102 test (`python -m pytest`): 73 birim, 21 entegrasyon, 8 E2E → [05-yazilim-testleri.md](05-yazilim-testleri.md) |
+| Otomatik testler | ✅ | 111 test (`python -m pytest`): 79 birim, 24 entegrasyon, 8 E2E → [05-yazilim-testleri.md](05-yazilim-testleri.md) |
 | Sürüm kontrolü | ✅ | Git + [GitHub](https://github.com/FurkanHaltas/ui-test-platform), her push'ta CI |
 | Kurulum/çalıştırma belgesi | ✅ | [../README.md](../README.md) |
 
@@ -38,7 +38,7 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | | Temel algoritmalar | 🟡 | kararlar K2 (doğrulama), K7 (timeout hesabı), K15 (atomik kuyruk) |
 | | API / modül yapısı | 🟡 | README uç nokta tablosu, `/docs` (Swagger) |
 | | Önemli kod bölümleri | ⬜ | Aşama 5'te seçilecek: `claim_next_run`, `_run_step`, `build_locator`, `_parse_step` |
-| | Ekran görüntüleri | ✅ | [ekran-goruntuleri/](ekran-goruntuleri/) (15 görüntü, görsel regresyon, sayfa hataları, kararsız test ve CI dahil); CLI çıktısı Aşama 5'te |
+| | Ekran görüntüleri | ✅ | [ekran-goruntuleri/](ekran-goruntuleri/) (16 görüntü, görsel regresyon, sayfa hataları, kararsız test, veri odaklı test ve CI dahil); CLI çıktısı Aşama 5'te |
 | **5. Yazılım testleri** | Test stratejisi | ✅ | [05-yazilim-testleri.md](05-yazilim-testleri.md) |
 | | Birim / entegrasyon / E2E testleri | ✅ | aynı dosya, 5.2–5.4 |
 | | Fonksiyonel test senaryoları | ✅ | aynı dosya, 5.5 |

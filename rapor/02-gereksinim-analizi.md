@@ -22,8 +22,9 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | FR-14 | Görsel regresyon: ekran görüntüsünü önceki koşuyla karşılaştırma. | Could | ✅ (bonus) |
 | FR-15 | Kaydedici: tarayıcıda yapılan işlemleri YAML teste çevirme. | Could | ⏳ Bonus |
 | FR-16 | Yapay zekâ ile kalan testin hatasını açıklama. | Could | ⏳ Bonus |
-| FR-17 | Tekrar deneme / flaky işareti, zamanlanmış testler, veri odaklı testler, bildirim. | Could | ⏳ Bonus |
+| FR-17 | Zamanlanmış testler ve bildirim. | Could | ⏳ Bonus (B5) |
 | FR-18 | Firefox/WebKit desteği, kullanıcı hesapları, paralel koşu. | Won't | ➖ |
+| FR-21 | Kullanıcı aynı test adımlarını bir veri tablosunun her satırıyla ayrı ayrı koşturabilmeli; sonuç satır satır raporlanmalı. | Could | ✅ (bonus B3) |
 | FR-20 | Kullanıcı, kalan bir testin belirli sayıda yeniden denenmesini isteyebilmeli; önce kalıp sonra geçen test "kararsız" olarak işaretlenmeli ve önceki denemelerin kanıtları saklanmalı. | Could | ✅ (bonus B2) |
 | FR-19 | Sistem, test yazılmasa da sayfadaki JavaScript hatalarını ve başarısız ağ isteklerini kaydedip raporlamalı; kullanıcı isterse bu durumda test kalmalı. | Could | ✅ (bonus B1) |
 
@@ -39,7 +40,7 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | NFR-06 | İzlenebilirlik | Bir koşunun hangi test tanımıyla yapıldığı sonradan değişmemeli. | Koşu, YAML'ın kopyasını saklar (K17). |
 | NFR-07 | Sürdürülebilirlik | Yeni adım tipi eklemek koşucuyu değiştirmemeli; kod savunmada satır satır açıklanabilir olmalı. | Command pattern (K4), ORM'siz düz SQL (K16), Türkçe yorumlar. |
 | NFR-08 | Taşınabilirlik ve kurulum | Python 3.11+ olan her makinede birkaç komutla kurulmalı; ek veritabanı sunucusu gerektirmemeli. | SQLite tek dosya; README'de 4 komutluk kurulum. Windows'ta geliştirildi, yollar platformdan bağımsız (`as_posix`). |
-| NFR-09 | Test edilebilirlik | Kodun önemli kısımları otomatik testlerle doğrulanmalı. | 102 test: 73 birim, 21 entegrasyon, 8 E2E (bkz. 5. bölüm). |
+| NFR-09 | Test edilebilirlik | Kodun önemli kısımları otomatik testlerle doğrulanmalı. | 111 test: 79 birim, 24 entegrasyon, 8 E2E (bkz. 5. bölüm). |
 
 ## 2.3 Kullanıcı hikâyeleri ve kabul kriterleri
 
@@ -132,4 +133,5 @@ Kabul kriterleri *Verilen – Olduğunda – O zaman* (Given–When–Then) kal�
 | FR-13 | US-5 | `.github/workflows/ci.yml`; ilk koşu başarılı (GitHub Actions #1) |
 | FR-14 | — | `test_visual` (6 test), E2E-8 `test_visual_regression_flow` |
 | FR-19 | — | `test_page_errors` (4 test), `test_web::test_report_shows_page_errors`, E2E-3/E2E-4 |
+| FR-21 | — | `test_data_driven` (3 test), `test_dsl` (5 veri tablosu testi), `test_web::test_data_driven_report_shows_rows` |
 | FR-20 | — | `test_retries` (5 test), `test_db` (göç, flaky), `test_web::test_flaky_run_shows_badge_and_previous_attempts`, `test_dsl::test_retries_option_and_limits` |
