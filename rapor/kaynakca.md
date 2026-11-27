@@ -40,6 +40,8 @@
 32. Python Pillow. *ImageChops ("Channel Operations") Module*. https://pillow.readthedocs.io/en/stable/reference/ImageChops.html
 33. Mapbox. *pixelmatch* (görsel karşılaştırma için değerlendirilen alternatif). https://github.com/mapbox/pixelmatch
 34. Microsoft. *Playwright — Page events (console, pageerror, response, requestfailed)*. https://playwright.dev/python/docs/api/class-page#events
+35. Micco, J. (2016). *Flaky Tests at Google and How We Mitigate Them*. Google Testing Blog. https://testing.googleblog.com/2016/05/flaky-tests-at-google-and-how-we.html
+36. SQLite. *ALTER TABLE* (sütun ekleme ile şema göçü). https://www.sqlite.org/lang_altertable.html
 
 ## Test hedefi
-35. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.
+37. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.

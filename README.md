@@ -102,7 +102,7 @@ Veritabanı: `data/platform.db` (`UITP_DB` ortam değişkeniyle değiştirilebil
 python -m pytest
 ```
 
-93 test: 69 birim (tarayıcısız, ~1 sn), 16 entegrasyon ve 8 E2E (gerçek Chromium, internet gerekmez; toplam ~1,5 dk). E2E testleri sunucuyu ve worker'ı geçici bir klasörde kendileri başlatır; `data/platform.db`'ye dokunmaz.
+102 test: 73 birim (tarayıcısız, ~1 sn), 21 entegrasyon ve 8 E2E (gerçek Chromium, internet gerekmez; toplam ~1,5 dk). E2E testleri sunucuyu ve worker'ı geçici bir klasörde kendileri başlatır; `data/platform.db`'ye dokunmaz.
 Her çalıştırma `reports/test-raporu.html` (tarayıcıda açın) ve `reports/junit.xml` üretir. Ayrıntılar: [rapor/05-yazilim-testleri.md](rapor/05-yazilim-testleri.md).
 
 **CI:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri GitHub Actions'ta (Ubuntu) koşturur.
@@ -117,6 +117,12 @@ Test yazmanıza gerek kalmadan her koşuda sayfadaki **JavaScript hataları** (k
 
 Demo: Sürüm 2.0'ın ürünler sayfasında bilerek konmuş 3 sayfa hatası var; Sürüm 1.0 temiz.
 
+## Tekrar deneme ve kararsız testler
+
+YAML'ın köküne `retries: 2` yazarsanız kalan test temiz bir tarayıcı oturumuyla baştan en fazla 2 kez daha denenir. Önce kalıp sonra geçen test **"Kararsız"** rozetiyle işaretlenir; önceki denemelerin hata mesajı, ekran görüntüsü ve trace'i raporda "Önceki denemeler" bölümünde saklanır. Tekrar deneme hatayı gizlemez, görünür kılar.
+
+Demo: `examples/demo/kararsiz-kampanya.yaml` (sayfa 0–2 sn rastgele gecikmeyle yüklenir; birkaç kez koşturup farklı sonuçları görün).
+
 ## Test formatı (DSL v1)
 
 ```yaml
@@ -126,6 +132,7 @@ testIdAttribute: data-test   # opsiyonel, varsayılan data-testid
 timeout: 60000               # opsiyonel, testin tamamı (ms)
 stepTimeout: 10000           # opsiyonel, adım başına (ms)
 failOnPageErrors: false      # opsiyonel, true: sayfada JS/ağ hatası olursa test kalır
+retries: 0                   # opsiyonel (0–5), kalan test kaç kez yeniden denensin
 steps:
   - goto: /
   - fill: { label: Username, value: standard_user }
