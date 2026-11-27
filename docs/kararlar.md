@@ -172,3 +172,14 @@ Her karar için: **ne** seçildi, **neden**, **alternatif** neydi.
 - **Kararlılık:** Ekran görüntüsü animasyonlar durdurulmuş ve yazı imleci gizlenmiş olarak alınıyor. Testi yazan, ekran görüntüsünden önce bir `expectVisible` ile sayfanın hazır olmasını beklemeli (örnekte böyle).
 - **Bilinçli değişiklik:** Fark kasıtlıysa rapordaki "Bu görüntüyü yeni referans yap" butonu (onay penceresiyle) ya da CLI'da `--update-baselines`. Uç nokta sadece referans klasörünün içine yazar (path traversal koruması, `test_web` ile test edildi).
 - **Raporda referansın kopyası:** Her koşu, karşılaştırdığı referansın kopyasını kendi klasörüne alır. Referans sonradan güncellense bile eski rapor "neyle karşılaştırıldı" sorusuna doğru cevap verir (K17'deki YAML kopyasıyla aynı izlenebilirlik mantığı).
+
+---
+
+# Tasarım Kararları (Bonuslar)
+
+## K32. Otomatik sayfa hatası yakalama (B1)
+- **Ne:** Her koşuda, kullanıcı hiçbir adım yazmadan, sayfadaki dört tür hata kaydedilir: konsol hataları (`console.error`), yakalanmamış JavaScript istisnaları, 400 ve üzeri dönen istekler, sunucuya hiç ulaşılamayan istekler. Her hata, oluştuğu sırada çalışan adımın numarasıyla saklanır; aynı hata tekrarlanırsa tek satırda sayısı artar (en fazla 50 farklı hata).
+- **Neden:** Platform iş kurallarının doğruluğunu ancak kullanıcının yazdığı beklentilerle kontrol edebilir (test kâhini problemi). Ama bu dört tür, doğrunun ne olduğunu bilmeden de her sitede hata sayılabilir. Böylece platform, kimsenin test yazmadığı hataların bir kısmını da yakalar.
+- **Varsayılan: uyarı, test kalmaz.** Üçüncü taraf sitelerde (reklam, analitik) testin konusu olmayan hatalar sık görülür; bunlar her testi kırmızıya çevirirse kullanıcı uyarılara bakmayı bırakır. Kullanıcı isterse `failOnPageErrors: true` ile testi kaldırır.
+- **Gürültü filtresi:** Sitenin hatası olmayan üç durum sayılmaz: tarayıcının kendiliğinden istediği `favicon.ico`, sayfa değişirken tarayıcının yarıda bıraktığı istekler (`ERR_ABORTED`) ve konsoldaki "Failed to load resource" satırları (aynı hata zaten HTTP kaydında var; iki kez sayılmaz). Ölçüm: temiz demo sitesinde (Sürüm 1.0) **0** hata.
+- **Nasıl:** Playwright'ın olay dinleyicileri (`page.on("console" | "pageerror" | "response" | "requestfailed")`), ayrı bir küçük sınıfta (`engine/page_errors.py`). Runner sadece her adımdan önce "şu an hangi adımdayız" bilgisini verir.

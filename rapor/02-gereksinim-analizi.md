@@ -24,6 +24,7 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | FR-16 | Yapay zekâ ile kalan testin hatasını açıklama. | Could | ⏳ Bonus |
 | FR-17 | Tekrar deneme / flaky işareti, zamanlanmış testler, veri odaklı testler, bildirim. | Could | ⏳ Bonus |
 | FR-18 | Firefox/WebKit desteği, kullanıcı hesapları, paralel koşu. | Won't | ➖ |
+| FR-19 | Sistem, test yazılmasa da sayfadaki JavaScript hatalarını ve başarısız ağ isteklerini kaydedip raporlamalı; kullanıcı isterse bu durumda test kalmalı. | Could | ✅ (bonus B1) |
 
 ## 2.2 Fonksiyonel olmayan gereksinimler
 
@@ -37,7 +38,7 @@ Durum işaretleri: ✅ gerçekleştirildi · ⏳ planlandı (aşama numarasıyla
 | NFR-06 | İzlenebilirlik | Bir koşunun hangi test tanımıyla yapıldığı sonradan değişmemeli. | Koşu, YAML'ın kopyasını saklar (K17). |
 | NFR-07 | Sürdürülebilirlik | Yeni adım tipi eklemek koşucuyu değiştirmemeli; kod savunmada satır satır açıklanabilir olmalı. | Command pattern (K4), ORM'siz düz SQL (K16), Türkçe yorumlar. |
 | NFR-08 | Taşınabilirlik ve kurulum | Python 3.11+ olan her makinede birkaç komutla kurulmalı; ek veritabanı sunucusu gerektirmemeli. | SQLite tek dosya; README'de 4 komutluk kurulum. Windows'ta geliştirildi, yollar platformdan bağımsız (`as_posix`). |
-| NFR-09 | Test edilebilirlik | Kodun önemli kısımları otomatik testlerle doğrulanmalı. | 86 test: 66 birim, 12 entegrasyon, 8 E2E (bkz. 5. bölüm). |
+| NFR-09 | Test edilebilirlik | Kodun önemli kısımları otomatik testlerle doğrulanmalı. | 93 test: 69 birim, 16 entegrasyon, 8 E2E (bkz. 5. bölüm). |
 
 ## 2.3 Kullanıcı hikâyeleri ve kabul kriterleri
 
@@ -129,3 +130,4 @@ Kabul kriterleri *Verilen – Olduğunda – O zaman* (Given–When–Then) kal�
 | FR-12 | US-1…4 | `test_web` (12 test: formlar, yönlendirmeler, hata gösterimi, XSS kaçışı, rapor, süzgeç); E2E-1…6 (`test_platform_e2e`) |
 | FR-13 | US-5 | `.github/workflows/ci.yml`; ilk koşu başarılı (GitHub Actions #1) |
 | FR-14 | — | `test_visual` (6 test), E2E-8 `test_visual_regression_flow` |
+| FR-19 | — | `test_page_errors` (4 test), `test_web::test_report_shows_page_errors`, E2E-3/E2E-4 |

@@ -102,7 +102,7 @@ Veritabanı: `data/platform.db` (`UITP_DB` ortam değişkeniyle değiştirilebil
 python -m pytest
 ```
 
-86 test: 66 birim (tarayıcısız, ~2 sn), 12 entegrasyon ve 8 E2E (gerçek Chromium, internet gerekmez; toplam ~1,5 dk). E2E testleri sunucuyu ve worker'ı geçici bir klasörde kendileri başlatır; `data/platform.db`'ye dokunmaz.
+93 test: 69 birim (tarayıcısız, ~1 sn), 16 entegrasyon ve 8 E2E (gerçek Chromium, internet gerekmez; toplam ~1,5 dk). E2E testleri sunucuyu ve worker'ı geçici bir klasörde kendileri başlatır; `data/platform.db`'ye dokunmaz.
 Her çalıştırma `reports/test-raporu.html` (tarayıcıda açın) ve `reports/junit.xml` üretir. Ayrıntılar: [rapor/05-yazilim-testleri.md](rapor/05-yazilim-testleri.md).
 
 **CI:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri GitHub Actions'ta (Ubuntu) koşturur.
@@ -110,6 +110,12 @@ Her çalıştırma `reports/test-raporu.html` (tarayıcıda açın) ve `reports/
 ## Görsel regresyon
 
 `expectScreenshot: ad` adımı sayfanın görüntüsünü testin referans görüntüsüyle karşılaştırır. İlk koşuda referans `data/baselines/<test-adı>/` altına kaydedilir. Sonraki koşularda değişen pikseller %0,01'i aşarsa adım kalır ve raporda referans / bu koşu / fark görüntüleri yan yana görünür. Fark bilinçliyse rapordaki **"Bu görüntüyü yeni referans yap"** butonunu kullanın. Örnek: `examples/demo/gorsel-sepet.yaml`.
+
+## Otomatik sayfa hatası yakalama
+
+Test yazmanıza gerek kalmadan her koşuda sayfadaki **JavaScript hataları** (konsol, yakalanmamış istisna) ve **başarısız istekler** (404/500, ulaşılamayan sunucu) kaydedilir. CLI'da ve rapor sayfasında "⚠ Sayfa hataları" olarak, oluştukları adımla birlikte görünür. Varsayılan olarak uyarıdır. Testin kalmasını istiyorsanız YAML'ın köküne `failOnPageErrors: true` ekleyin.
+
+Demo: Sürüm 2.0'ın ürünler sayfasında bilerek konmuş 3 sayfa hatası var; Sürüm 1.0 temiz.
 
 ## Test formatı (DSL v1)
 
@@ -119,6 +125,7 @@ baseUrl: https://www.saucedemo.com
 testIdAttribute: data-test   # opsiyonel, varsayılan data-testid
 timeout: 60000               # opsiyonel, testin tamamı (ms)
 stepTimeout: 10000           # opsiyonel, adım başına (ms)
+failOnPageErrors: false      # opsiyonel, true: sayfada JS/ağ hatası olursa test kalır
 steps:
   - goto: /
   - fill: { label: Username, value: standard_user }

@@ -12,9 +12,9 @@ Test piramidi yaklaşımı [4] izlendi: çok sayıda hızlı birim testi, daha a
               ┌─────────┐
               │   E2E   │   8 test · ~48 sn · gerçek sunucu + worker + Chromium
              ┌┴─────────┴┐
-             │Entegrasyon│  12 test · ~38 sn · gerçek Chromium, yerel sayfalar
+             │Entegrasyon│  16 test · ~45 sn · gerçek Chromium, yerel sayfalar
            ┌─┴───────────┴─┐
-           │     Birim     │ 66 test · ~2 sn · tarayıcı yok
+           │     Birim     │ 69 test · ~1 sn · tarayıcı yok
            └───────────────┘
 ```
 
@@ -31,23 +31,24 @@ Test piramidi yaklaşımı [4] izlendi: çok sayıda hızlı birim testi, daha a
 - **Gereksinime bağlılık:** Her kabul kriterinin onu doğrulayan testi vardır (bkz. 2.3 ve 2.5 izlenebilirlik matrisi).
 - **Kendi kendini test etme (dogfooding):** `examples/platform/arayuz.yaml`, platformun web editörünü platformun kendi YAML diliyle test eder. E2E testi bu YAML'ı worker'a koşturur.
 
-## 5.2 Birim testleri (66 test)
+## 5.2 Birim testleri (69 test)
 
 | Dosya | Test sayısı | Kapsam |
 |-------|------------:|--------|
-| `tests/unit/test_dsl.py` | 24 | Geçerli tanım, varsayılanlar, örnek dosyaların geçerliliği; 19 hata senaryosu (bilinmeyen adım, eksik/çift locator, `name`'in `role`'süz kullanımı, eksik `value`, bilinmeyen alan, virgül ipucu, YAML sözdizimi hatası ve satır numarası, eksik/geçersiz `baseUrl`, boş adım listesi, negatif timeout, eksik dosya…) |
+| `tests/unit/test_dsl.py` | 25 | Geçerli tanım, varsayılanlar, `failOnPageErrors` seçeneği, örnek dosyaların geçerliliği; 19 hata senaryosu (bilinmeyen adım, eksik/çift locator, `name`'in `role`'süz kullanımı, eksik `value`, bilinmeyen alan, virgül ipucu, YAML sözdizimi hatası ve satır numarası, eksik/geçersiz `baseUrl`, boş adım listesi, negatif timeout, eksik dosya…) |
 | `tests/unit/test_db.py` | 9 | Kuyruğun ilk giren ilk çıkar (FIFO) çalışması, bir işin iki kez alınamaması, YAML kopyası, yarıda kalan koşuların `error` olması, silmede CASCADE, süzgeçler |
 | `tests/unit/test_api.py` | 9 | CRUD uç noktaları, 422 + Türkçe hata listesi, 404, kuyruğa almada 202, dosya adreslerinin üretilmesi, süzgeçler |
-| `tests/unit/test_web.py` | 15 | Sayfaların açılması, formlar ve 303 yönlendirmeleri, hatalı kayıtta metnin korunması, **XSS kaçışı**, otomatik yenileme, demo sitesinin iki sürümü, görsel referans güncellemede **path traversal koruması** |
+| `tests/unit/test_web.py` | 17 | Sayfaların açılması, sayfa hataları tablosu (ve içindeki mesajların kaçışlanması), formlar ve 303 yönlendirmeleri, hatalı kayıtta metnin korunması, **XSS kaçışı**, otomatik yenileme, demo sitesinin iki sürümü, görsel referans güncellemede **path traversal koruması** |
 | `tests/unit/test_cli.py` | 4 | Çıkış kodları 0/2, geçersiz dosya varken hiçbir testin koşmaması |
 | `tests/unit/test_helpers.py` | 5 | URL birleştirme, Türkçe karakterli klasör adları, hata mesajı kısaltma, Command nesnelerinin üretilmesi |
 
-## 5.3 Entegrasyon testleri (12 test)
+## 5.3 Entegrasyon testleri (16 test)
 
 | Dosya | Test sayısı | Kapsam |
 |-------|------------:|--------|
 | `tests/integration/test_worker.py` | 3 | Kuyruk → worker → Chromium → veritabanı: geçen test; kalan test (ekran görüntüsü + trace + atlanan adımlar); tarayıcı açılamazsa `error` |
 | `tests/integration/test_demo_site.py` | 3 | Demo örnekleri Sürüm 1.0'da geçer; sipariş testi Sürüm 2.0'da tam olarak sepet toplamı adımında kalır (sunum senaryosunun korunması) |
+| `tests/integration/test_page_errors.py` | 4 | Otomatik sayfa hatası yakalama (B1): Sürüm 1.0'da **sıfır** hata (gürültü filtresi), 2.0'daki üç bilinçli hatanın türüyle yakalanması, `failOnPageErrors` ile testin kalması ve trace'in saklanması, ulaşılamayan sunucu / tekrarlanan hata / favicon gürültüsü |
 | `tests/integration/test_visual.py` | 6 | Görüntü karşılaştırma fonksiyonu (aynı görüntü, 100 piksellik değişiklik, küçük renk gürültüsü, farklı boyut); demo sitesinde referans oluşturma → aynı sürümde %0 fark → 2.0'da farkın yakalanması; referans güncelleme |
 
 ## 5.4 Uçtan uca (E2E) testleri (8 test)
@@ -58,8 +59,8 @@ Test piramidi yaklaşımı [4] izlendi: çok sayıda hızlı birim testi, daha a
 |---|------|-------------------|---------------|
 | E2E-1 | `test_create_test_in_editor` | US-1 | Editörde YAML yazılır, canlı doğrulama "✓ Geçerli · 8 adım" der, kaydedilir, listede görünür |
 | E2E-2 | `test_invalid_test_is_rejected_with_turkish_errors` | US-1 | Hatalı adım yazarken "4. adım: bilinmeyen adım tipi 'tikla'" görünür; kaydetme reddedilir, yazılan kaybolmaz |
-| E2E-3 | `test_passing_run_shows_passed_report` | US-2 | "Koştur" → rapor sayfası "Sırada"dan "Geçti"ye döner; 15 adım, ekran görüntüsü yüklü |
-| E2E-4 | `test_regression_in_v2_is_caught_with_evidence` | US-3 | Sürüm 2.0 regresyonu: "Kaldı", hata kutusunda "1.250 TL", 1 kalan + 5 atlanan adım, ekran görüntüsü gerçekten yüklenmiş, trace indirilebilir |
+| E2E-3 | `test_passing_run_shows_passed_report` | US-2 | "Koştur" → rapor sayfası "Sırada"dan "Geçti"ye döner; 15 adım, ekran görüntüsü yüklü, sayfa hatası bölümü **yok** (1.0 temiz) |
+| E2E-4 | `test_regression_in_v2_is_caught_with_evidence` | US-3 | Sürüm 2.0 regresyonu: "Kaldı", hata kutusunda "1.250 TL", 1 kalan + 5 atlanan adım, ekran görüntüsü gerçekten yüklenmiş, trace indirilebilir; ayrıca test sormadığı halde "Sayfa hataları (3)" bölümü (B1) |
 | E2E-5 | `test_run_history_can_be_filtered_by_status` | US-4 | Koşular sayfasında "Kaldı" süzgeci yalnızca kalan koşuları gösterir |
 | E2E-6 | `test_delete_test_asks_for_confirmation` | — | Silme onay penceresi; onaydan sonra test listeden kalkar |
 | E2E-7 | `test_platform_tests_its_own_ui_with_its_own_dsl` | — | Platform, kendi editörünü kendi YAML diliyle test eder ve geçer |
@@ -79,19 +80,19 @@ Otomatik testlerin yanında, sunumda canlı gösterilecek akışlar elle de dene
 
 ## 5.6 Test sonuçları
 
-Son tam koşu (25.11.2026, Windows 11, Python 3.12, Chromium 159 headless):
+Son tam koşu (27.11.2026, Windows 11, Python 3.12, Chromium 159 headless):
 
 | Katman | Test | Geçti | Kaldı | Süre |
 |--------|-----:|------:|------:|-----:|
-| Birim | 66 | 66 | 0 | ~2 sn |
-| Entegrasyon | 12 | 12 | 0 | ~38 sn |
-| E2E | 8 | 8 | 0 | ~48 sn |
-| **Toplam** | **86** | **86** | **0** | **~88 sn** |
+| Birim | 69 | 69 | 0 | ~1 sn |
+| Entegrasyon | 16 | 16 | 0 | ~45 sn |
+| E2E | 8 | 8 | 0 | ~38 sn |
+| **Toplam** | **93** | **93** | **0** | **~84 sn** |
 
 - Her `python -m pytest` çalıştırması `reports/junit.xml` (makine okur) ve `reports/test-raporu.html` (tarayıcıda açılan tek dosyalık rapor) üretir. Teslimde HTML rapor eklere konacak.
 - **Sürekli entegrasyon:** `.github/workflows/ci.yml` her push ve pull request'te aynı testleri temiz bir Ubuntu makinesinde koşturur, YAML örneklerini doğrular, katman katman özet tablo yazar ve raporları 14 gün saklar.
 
-**İlk CI koşusu** (25.11.2026, [GitHub Actions #1](https://github.com/FurkanHaltas/ui-test-platform/actions/runs/45630609044), Ubuntu, `ubuntu-latest`): **başarılı**, toplam 2 dk 7 sn. Ekran görüntüsü: [11-ci-github-actions.png](ekran-goruntuleri/11-ci-github-actions.png).
+**İlk CI koşusu** (25.11.2026, o tarihte 86 test, [GitHub Actions #1](https://github.com/FurkanHaltas/ui-test-platform/actions/runs/45630609044), Ubuntu, `ubuntu-latest`): **başarılı**, toplam 2 dk 7 sn. Ekran görüntüsü: [11-ci-github-actions.png](ekran-goruntuleri/11-ci-github-actions.png).
 
 | CI adımı | Süre |
 |----------|-----:|
@@ -121,5 +122,6 @@ Ayrıntılı kayıt: [hata-kaydi.md](hata-kaydi.md) (belirti, kök neden, çöz�
 | H-10 | Koşu süzgecinde "Tüm testler" seçiliyken sayfa yerine JSON hatası | **E2E testi** | ✅ |
 | H-11 | E2E testleri entegrasyon testlerinden önce koşunca Playwright çakışması | Test sırası denemesi | ✅ |
 | H-12 | CI'da kullanımdan kalkan Node.js 20 uyarısı | İlk CI koşusu | ✅ |
+| H-13 | `failOnPageErrors` ile kalan testte trace kaydedilmiyordu | B1'in entegrasyon testi | ✅ |
 
 Dikkat çekici olan: H-04 ve H-10 doğrudan platformun kendi otomatik testleri tarafından bulundu. H-07'yi ise platformun doğrulayıcısı, örnek test yazılırken yakaladı.

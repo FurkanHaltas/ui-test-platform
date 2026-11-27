@@ -82,3 +82,6 @@ python -m api.seed                                # örnek testleri DB'ye yükle
 ## Depo
 - Uzak depo: https://github.com/FurkanHaltas/ui-test-platform (herkese açık), dal `main`. Her push CI'ı tetikler.
 - `Proje Başlama Promptu.txt` sadece yerelde kalır (`.gitignore`'da); git geçmişinden de çıkarıldı. Asla commit'leme.
+
+## Bonus notları
+- B1 (sayfa hatası yakalama): `engine/page_errors.py` (PageErrorCollector), `RunResult.page_errors`, DSL `failOnPageErrors`. Demo 2.0 ürünler sayfasında bilinçli 3 hata (`demo_site/app.js` → addV2PageErrors); 1.0'da 0 hata olmalı (test_page_errors).

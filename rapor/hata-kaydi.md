@@ -18,6 +18,7 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 | H-10 | 25.11.2026 | 4 | E2E testi | ✅ |
 | H-11 | 25.11.2026 | 4 | Test sırası denemesi | ✅ |
 | H-12 | 25.11.2026 | 4 | İlk CI koşusu | ✅ |
+| H-13 | 27.11.2026 | B1 | Entegrasyon testi | ✅ |
 
 ---
 
@@ -97,3 +98,9 @@ Durum: ✅ giderildi · ⚠️ geçici çözümle aşıldı · 🔓 açık
 - **Kök neden:** İş akışı yazılırken eylemlerin bilinen eski ana sürümleri (v4/v5) kullanılmıştı.
 - **Çözüm:** Her eylemin en güncel sürümü GitHub'dan kontrol edildi (hepsi v7, Node 24) ve iş akışı güncellendi.
 - **Ders:** Uyarılar da okunmalı. Bugün sadece uyarı olan şey, GitHub eski çalışma ortamını kaldırdığı gün CI'ı kırar.
+
+## H-13 — `failOnPageErrors` ile kalan testte trace kaydedilmiyordu
+- **Belirti:** B1'in entegrasyon testinde, sayfa hatası yüzünden kalan testin `trace` alanı boş çıktı. Diğer kalan testlerde trace her zaman saklanıyordu.
+- **Kök neden:** Sıralama hatası. Runner trace kaydını kapatırken "test kaldı mı?" diye bakıp karar veriyordu, ama sayfa hatası kontrolü trace kapatıldıktan **sonra** yapılıyordu. Trace kapatılırken test henüz "geçti" göründüğü için atılıyordu.
+- **Çözüm:** Sayfa hatası kontrolü, adımlar bittikten hemen sonra ve trace kapatılmadan önceye taşındı.
+- **Nasıl bulundu:** Testi yazarken "kalan testin trace'i saklanmalı" kuralını (K8) ayrıca doğrulayan bir satır eklendi; hatayı ilk koşuda o satır yakaladı. Var olan bir kuralı yeni özellikte de test etmenin değeri.

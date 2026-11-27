@@ -24,7 +24,7 @@ Rapor son haftaya bırakılmaz; her aşama kendi bölümünü `rapor/` klasörü
 
 ## Bonus listesi (MVP sonrası)
 - [x] Görsel regresyon (`expectScreenshot`; pixelmatch yerine Pillow, bkz. K31)
-- [ ] B1 Otomatik sayfa hatası yakalama (konsol + ağ)
+- [x] B1 Otomatik sayfa hatası yakalama (konsol + ağ), 27.11.2026, bkz. K32
 - [ ] B2 Tekrar deneme ve kararsız (flaky) test işareti
 - [ ] B3 Veri odaklı testler
 - [ ] B4 Kaydedici (Playwright codegen → YAML)

@@ -39,6 +39,7 @@
 31. GitHub. *GitHub Actions Documentation — Building and testing Python*. https://docs.github.com/en/actions/use-cases-and-examples/building-and-testing/building-and-testing-python
 32. Python Pillow. *ImageChops ("Channel Operations") Module*. https://pillow.readthedocs.io/en/stable/reference/ImageChops.html
 33. Mapbox. *pixelmatch* (görsel karşılaştırma için değerlendirilen alternatif). https://github.com/mapbox/pixelmatch
+34. Microsoft. *Playwright — Page events (console, pageerror, response, requestfailed)*. https://playwright.dev/python/docs/api/class-page#events
 
 ## Test hedefi
-34. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.
+35. Sauce Labs. *Swag Labs demo uygulaması*. https://www.saucedemo.com/ — Örnek testlerin koşturulduğu, test otomasyonu alıştırması için yayınlanmış demo site.

@@ -15,9 +15,9 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | Temel işlevler çalışıyor | ✅ | Motor, API, worker, web arayüzü |
 | Veri saklama | ✅ | SQLite (`data/platform.db`), JSON sonuçlar, `artifacts/` |
 | Arayüz (web/CLI/API) | ✅ | Web arayüzü + CLI + REST API |
-| En az 3 fonksiyonel gereksinim | ✅ | 14 gereksinim gerçekleşti (FR-14 bonus dahil) → [02-gereksinim-analizi.md](02-gereksinim-analizi.md) |
+| En az 3 fonksiyonel gereksinim | ✅ | 15 gereksinim gerçekleşti (bonuslar FR-14, FR-19 dahil) → [02-gereksinim-analizi.md](02-gereksinim-analizi.md) |
 | En az bir hata/istisna yönetimi | ✅ | Türkçe doğrulama hataları, 404/422, timeout, `failed`/`error` ayrımı |
-| Otomatik testler | ✅ | 86 test (`python -m pytest`): 66 birim, 12 entegrasyon, 8 E2E → [05-yazilim-testleri.md](05-yazilim-testleri.md) |
+| Otomatik testler | ✅ | 93 test (`python -m pytest`): 69 birim, 16 entegrasyon, 8 E2E → [05-yazilim-testleri.md](05-yazilim-testleri.md) |
 | Sürüm kontrolü | ✅ | Git + [GitHub](https://github.com/FurkanHaltas/ui-test-platform), her push'ta CI |
 | Kurulum/çalıştırma belgesi | ✅ | [../README.md](../README.md) |
 
@@ -38,14 +38,14 @@ Durum: ✅ yazıldı · 🟡 malzeme hazır, rapor diline çevrilecek · ⏳ ilg
 | | Temel algoritmalar | 🟡 | kararlar K2 (doğrulama), K7 (timeout hesabı), K15 (atomik kuyruk) |
 | | API / modül yapısı | 🟡 | README uç nokta tablosu, `/docs` (Swagger) |
 | | Önemli kod bölümleri | ⬜ | Aşama 5'te seçilecek: `claim_next_run`, `_run_step`, `build_locator`, `_parse_step` |
-| | Ekran görüntüleri | ✅ | [ekran-goruntuleri/](ekran-goruntuleri/) (11 görüntü, görsel regresyon ve CI dahil); CLI çıktısı Aşama 5'te |
+| | Ekran görüntüleri | ✅ | [ekran-goruntuleri/](ekran-goruntuleri/) (13 görüntü, görsel regresyon, sayfa hataları ve CI dahil); CLI çıktısı Aşama 5'te |
 | **5. Yazılım testleri** | Test stratejisi | ✅ | [05-yazilim-testleri.md](05-yazilim-testleri.md) |
 | | Birim / entegrasyon / E2E testleri | ✅ | aynı dosya, 5.2–5.4 |
 | | Fonksiyonel test senaryoları | ✅ | aynı dosya, 5.5 |
 | | Test sonuçları | ✅ | 5.6: yerel koşu + ilk CI koşusu, `reports/test-raporu.html`, CI ekran görüntüsü |
 | | Tespit edilen ve giderilen hatalar | ✅ | [hata-kaydi.md](hata-kaydi.md) (11 kayıt), özeti 5.7 |
 | **6. Sonuç ve değerlendirme** | Gerçekleşen gereksinimler, sorunlar, çözümler, sınırlılıklar, iyileştirmeler | 🟡 | Gereksinim tablosu, hata kaydı, kapsam dışı listesi, ROADMAP bonusları |
-| | Sınırlılık notu | 🟡 | **Test kâhini (oracle) problemi:** platform sadece kullanıcının tanımladığı beklentileri kontrol eder, siteyi gezip iş kuralı hatalarını kendi başına bulamaz (doğrunun ne olduğunu bilemez). Görsel regresyon sorulmayan görsel değişiklikleri yakalayarak bunu kısmen genişletir. İyileştirme: konsol/ağ hatalarının otomatik yakalanması (ROADMAP). |
+| | Sınırlılık notu | 🟡 | **Test kâhini (oracle) problemi:** platform sadece kullanıcının tanımladığı beklentileri kontrol eder, siteyi gezip iş kuralı hatalarını kendi başına bulamaz (doğrunun ne olduğunu bilemez). Görsel regresyon sorulmayan görsel değişiklikleri yakalayarak bunu kısmen genişletir. Konsol/ağ hatalarının otomatik yakalanması (B1, K32) bu sınırı biraz daha genişletir: doğrunun ne olduğunu bilmeden de hata sayılabilen türleri test yazılmadan yakalar. |
 | **7. Kaynakça** | | ✅ | [kaynakca.md](kaynakca.md) (sürekli güncellenir) |
 
 ### 3. Sunum (10–15 dk, uygulama canlı test edilecek)
