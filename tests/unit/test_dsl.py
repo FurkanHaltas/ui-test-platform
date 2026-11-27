@@ -67,6 +67,14 @@ steps:
     assert test.steps[0].args.timeout == 500
 
 
+def test_fail_on_page_errors_option():
+    assert parse_test(HEADER + "  - goto: /\n").fail_on_page_errors is False
+    test = parse_test(HEADER.replace("steps:", "failOnPageErrors: true\nsteps:") + "  - goto: /\n")
+    assert test.fail_on_page_errors is True
+    msg = errors_of(HEADER.replace("steps:", "failOnPageErrors: belki\nsteps:") + "  - goto: /\n")
+    assert "failOnPageErrors" in msg
+
+
 def test_numeric_value_becomes_text():
     test = parse_test(HEADER + "  - fill: { css: '#zip', value: 34000 }\n")
     assert test.steps[0].args.value == "34000"

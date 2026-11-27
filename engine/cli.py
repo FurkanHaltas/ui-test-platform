@@ -21,6 +21,7 @@ from playwright.sync_api import Error as PlaywrightError
 
 from engine.console import use_utf8_output
 from engine.dsl import DslError, TestDefinition, load_test
+from engine.page_errors import KIND_LABELS
 from engine.results import RunResult
 from engine.runner import DEFAULT_ARTIFACTS_DIR, run_tests
 
@@ -28,6 +29,7 @@ from engine.runner import DEFAULT_ARTIFACTS_DIR, run_tests
 _COLOR = sys.stdout.isatty()
 GREEN = "\033[32m" if _COLOR else ""
 RED = "\033[31m" if _COLOR else ""
+YELLOW = "\033[33m" if _COLOR else ""
 GRAY = "\033[90m" if _COLOR else ""
 RESET = "\033[0m" if _COLOR else ""
 
@@ -125,6 +127,12 @@ def print_run(run: RunResult) -> None:
             print(f"         {RED}{s.error}{RESET}")
         if s.status == "failed" and s.screenshot:
             print(f"         {GRAY}ekran görüntüsü: {s.screenshot}{RESET}")
+    if run.page_errors:
+        print(f"    {YELLOW}⚠ Sayfa hataları ({len(run.page_errors)}){RESET}")
+        for e in run.page_errors:
+            where = f" — {e.url}" if e.url else ""
+            times = f" (×{e.count})" if e.count > 1 else ""
+            print(f"      [{KIND_LABELS[e.kind]}] {e.message}{times}{where}  {GRAY}{e.step}. adımda{RESET}")
     if run.trace:
         print(f"    {GRAY}trace: {run.trace}  (açmak için: playwright show-trace {run.trace}){RESET}")
 

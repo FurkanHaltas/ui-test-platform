@@ -23,6 +23,7 @@ from api import db
 from api.artifacts import add_artifact_urls
 from api.db import get_conn
 from engine.dsl import DslError, parse_test
+from engine.page_errors import KIND_LABELS
 from engine.runner import DEFAULT_BASELINES_DIR
 
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
@@ -68,6 +69,7 @@ def format_time(iso: Optional[str]) -> str:
 templates.env.filters["ms"] = format_ms
 templates.env.filters["time"] = format_time
 templates.env.globals["STATUS_LABELS"] = STATUS_LABELS
+templates.env.globals["PAGE_ERROR_LABELS"] = KIND_LABELS
 
 
 def render(request: Request, name: str, status_code: int = 200, **context) -> HTMLResponse:

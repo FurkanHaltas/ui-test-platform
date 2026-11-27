@@ -24,6 +24,7 @@
     <div><dt>Başladı</dt><dd>{{ run.started_at|time }}</dd></div>
     <div><dt>Bitti</dt><dd>{{ run.finished_at|time }}</dd></div>
     <div><dt>Süre</dt><dd>{{ run.duration_ms|ms }}</dd></div>
+    {% if result and result.page_errors %}<div><dt>Sayfa hataları</dt><dd><a href="#sayfa-hatalari" class="warn-link">⚠ {{ result.page_errors|length }}</a></dd></div>{% endif %}
     {% if result %}<div><dt>Hedef</dt><dd><a href="{{ result.base_url }}" target="_blank" rel="noopener">{{ result.base_url }}</a></dd></div>{% endif %}
   </dl>
 </section>
@@ -41,6 +42,29 @@
   <strong>{% if run.status == "error" %}Test çalıştırılamadı (platform hatası){% else %}Testin kaldığı yer{% endif %}</strong>
   <p>{{ run.error }}</p>
 </div>
+{% endif %}
+
+{% if result and result.page_errors %}
+<section id="sayfa-hatalari" class="page-errors">
+  <h2>⚠ Sayfa hataları ({{ result.page_errors|length }})</h2>
+  <p class="small muted">Test adımlarından bağımsız olarak, koşu sırasında sayfada kendiliğinden yakalanan hatalar.
+    Varsayılan olarak uyarıdır; YAML'a <code>failOnPageErrors: true</code> eklenirse test kalır.</p>
+  <table class="table">
+    <thead><tr><th>Tür</th><th>Hata</th><th>Adım</th></tr></thead>
+    <tbody>
+      {% for e in result.page_errors %}
+      <tr>
+        <td><span class="badge badge-error">{{ PAGE_ERROR_LABELS.get(e.kind, e.kind) }}</span></td>
+        <td>
+          <code>{{ e.message }}</code>{% if e.count > 1 %} <span class="muted small">×{{ e.count }}</span>{% endif %}
+          {% if e.url %}<div class="small muted url-cell">{{ e.url }}</div>{% endif %}
+        </td>
+        <td>{{ e.step or "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
 {% endif %}
 
 {% if result %}

@@ -28,6 +28,16 @@ class StepResult(BaseModel):
     baseline_source: Optional[str] = None  # asıl referans dosyası ("Referansı güncelle" için)
 
 
+class PageError(BaseModel):
+    """Test koşarken sayfada kendiliğinden oluşan hata (bkz. engine/page_errors.py)."""
+
+    kind: Literal["console", "exception", "http", "network"]
+    message: str
+    url: Optional[str] = None  # hatalı kaynağın ya da betiğin adresi
+    step: Optional[int] = None  # hata olduğunda çalışan adım
+    count: int = 1  # aynı hata kaç kez tekrarlandı
+
+
 class RunResult(BaseModel):
     run_id: str  # ör. 20261125-142301_basarili-giris
     test_name: str
@@ -39,6 +49,7 @@ class RunResult(BaseModel):
     duration_ms: int
     error: Optional[str] = None  # testin neden kaldığı (ilk başarısız adımın hatası)
     trace: Optional[str] = None  # sadece kalan testlerde kaydedilir
+    page_errors: list[PageError] = []  # test yazılmadan yakalanan sayfa hataları (B1)
     steps: list[StepResult]
 
     def save_json(self, path: Path) -> None:

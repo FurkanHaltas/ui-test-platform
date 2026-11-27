@@ -17,6 +17,7 @@ from typing import Optional
 from playwright.sync_api import Browser, sync_playwright
 
 from engine.dsl import TestDefinition
+from engine.page_errors import PageErrorCollector
 from engine.results import RunResult, StepResult
 from engine.steps import Step, build_steps
 
@@ -74,6 +75,8 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
     context = browser.new_context(viewport={"width": 1280, "height": 720})
     context.tracing.start(screenshots=True, snapshots=True)
     page = context.new_page()
+    # Test yazılmadan sayfa hatalarını (JS, 404/500...) toplamaya başla.
+    collector = PageErrorCollector(page)
     try:
         for step in steps:
             if run_error is not None:
@@ -81,10 +84,18 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
                 step_results.append(_skipped(step))
                 continue
 
+            collector.step = step.number  # bu sırada oluşan hatalar bu adıma yazılsın
             result = _run_step(page, step, test, deadline, run_dir)
             step_results.append(result)
             if result.status == "failed":
                 run_error = f"{step.number}. adım ({step.kind}): {result.error}"
+
+        # Adımlar geçti ama sayfa hatalıysa ve kullanıcı istemişse test kalır.
+        # Bu kontrol trace kapatılmadan önce olmalı ki kalan testin trace'i saklansın.
+        errors = collector.errors
+        if test.fail_on_page_errors and errors and run_error is None:
+            run_error = (f"sayfada {len(errors)} hata yakalandı (failOnPageErrors açık); "
+                         f"ilki: {errors[0].message}")
     finally:
         if run_error is not None:
             # Trace'i sadece kalan testlerde saklıyoruz; geçen testler için disk harcamıyoruz.
@@ -95,6 +106,7 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
             context.tracing.stop()
         context.close()
 
+    page_errors = collector.errors
     finished_at = datetime.now()
     run = RunResult(
         run_id=run_id,
@@ -107,6 +119,7 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
         duration_ms=int((time.monotonic() - start) * 1000),
         error=run_error,
         trace=trace_path,
+        page_errors=page_errors,
         steps=step_results,
     )
     run.save_json(run_dir / "result.json")

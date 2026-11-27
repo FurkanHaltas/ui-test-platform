@@ -170,3 +170,33 @@ def test_accept_screenshot_only_for_visual_steps(client, conn):
     step = {"number": 1, "kind": "click", "status": "failed", "description": "x", "screenshot": "a.png"}
     db.finish_run(conn, run_id, "failed", 1, "x", json.dumps({"steps": [step]}))
     assert client.post(f"/runs/{run_id}/steps/1/accept").status_code == 400
+
+
+def test_report_shows_page_errors(client, conn):
+    test_id = create(client)
+    run_id = db.create_run(conn, db.get_test(conn, test_id))
+    db.claim_next_run(conn)
+    result = {
+        "steps": [{"number": 1, "kind": "goto", "description": "goto /", "status": "passed",
+                   "duration_ms": 10, "screenshot": None}],
+        "page_errors": [
+            {"kind": "http", "message": "HTTP 404 Not Found", "url": "http://x/img/a.png", "step": 1, "count": 1},
+            {"kind": "console", "message": "<b>kalın</b> hata", "url": None, "step": 1, "count": 3},
+        ],
+    }
+    db.finish_run(conn, run_id, "passed", 10, None, json.dumps(result))
+
+    page = client.get(f"/runs/{run_id}").text
+    assert "Sayfa hataları (2)" in page
+    assert "HTTP 404 Not Found" in page and "http://x/img/a.png" in page
+    assert "×3" in page  # tekrarlanan hata sayısı
+    assert "&lt;b&gt;kalın&lt;/b&gt;" in page  # sayfadan gelen mesaj HTML olarak yorumlanmaz
+
+
+def test_report_without_page_errors_has_no_section(client, conn):
+    test_id = create(client)
+    run_id = db.create_run(conn, db.get_test(conn, test_id))
+    db.claim_next_run(conn)
+    db.finish_run(conn, run_id, "passed", 10, None, json.dumps({"steps": [], "page_errors": []}))
+    assert "Sayfa hataları" not in client.get(f"/runs/{run_id}").text
+

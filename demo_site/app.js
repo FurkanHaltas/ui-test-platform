@@ -6,6 +6,7 @@
 //   /demo/     -> Sürüm 1.0, doğru çalışır.
 //   /demo-v2/  -> Sürüm 2.0, BİLEREK HATALI: sepette birden fazla ürün varsa toplam,
 //                 son ürünü hesaba katmaz. Platformun bu "regresyonu" yakalaması gösterilir.
+//                 Ayrıca ürünler sayfasında 3 sayfa hatası var (konsol, 404, JS istisnası).
 
 const MiniMarket = (() => {
   const IS_V2 = location.pathname.includes("/demo-v2");
@@ -111,7 +112,24 @@ const MiniMarket = (() => {
         });
         grid.appendChild(card);
       }
+      if (IS_V2) addV2PageErrors(grid);
     }, PRODUCTS_DELAY_MS);
+  }
+
+  // BİLEREK KONULMUŞ SAYFA HATALARI (sürüm 2.0, B1 demosu). Sayfa çalışmaya devam eder,
+  // kullanıcı fark etmez; platform test yazılmadan bunları yakalar.
+  function addV2PageErrors(grid) {
+    // 1) Konsola yazılan hata
+    console.error("Kampanya servisine ulaşılamadı");
+    // 2) Var olmayan bir görsel -> HTTP 404
+    const banner = document.createElement("img");
+    banner.src = "img/kampanya-banner.png";
+    banner.alt = "";
+    banner.width = 1;
+    banner.height = 1;
+    grid.before(banner);
+    // 3) Yüklenmemiş bir analitik kütüphanesi çağrılıyor -> yakalanmamış TypeError
+    setTimeout(() => window.analitik.sayfaGoruntulendi("urunler"), 0);
   }
 
   function cartPage() {

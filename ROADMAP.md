@@ -6,7 +6,8 @@
 | 2 | API (FastAPI) + SQLite + worker | 2 – 8 Ara | ✅ |
 | 3 | Web arayüzü + rapor ekranı + **yerel demo sitesi** → **MVP** | 9 – 15 Ara | ✅ |
 | 4 | Platformun kendi E2E testleri + GitHub (uzak depo) + GitHub Actions + bonus | 16 – 22 Ara | ✅ |
-| 5 | Raporu birleştirme (Word/PDF), sunum, prova | 23 – 28 Ara | ⏳ |
+| B | Bonuslar B1–B6 (bkz. aşağıdaki bonus yol haritası) | 30 Kas – 14 Ara | 🚧 |
+| 5 | Raporu birleştirme (Word/PDF), sunum, prova | **15** – 28 Ara | ⏳ |
 
 Teslim: **28 Aralık 2026** — çalışan yazılım, 12–20 sayfalık doküman, 10–15 dk sunum (uygulama canlı test edilecek).
 
@@ -30,7 +31,7 @@ Rapor son haftaya bırakılmaz; her aşama kendi bölümünü `rapor/` klasörü
 - [ ] B5 Zamanlanmış testler + bildirim
 - [ ] B6 Yapay zekâ ile hata açıklama (isteğe bağlı)
 
-## Bonus yol haritası (taslak, 27.11.2026)
+## Bonus yol haritası (onaylandı 27.11.2026)
 
 **Zaman kutusu kuralı:** Aşama 5 (rapor + sunum) **en geç 15 Aralık'ta** başlar; bu tarih kaymaz. O güne yetişmeyen bonus kesilir ve rapora "gelecekte yapılabilecek iyileştirmeler" olarak yazılır. Bonuslar notlanan teslimi (doküman, sunum) riske atamaz.
 

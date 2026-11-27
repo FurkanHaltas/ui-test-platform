@@ -92,6 +92,7 @@ class TestHeader(BaseModel):
     timeout: PositiveInt = 60_000  # testin tamamı için üst sınır (ms)
     stepTimeout: PositiveInt = 10_000  # adım başına varsayılan zaman aşımı (ms)
     testIdAttribute: str = "data-testid"  # testId locator'ının baktığı HTML özniteliği
+    failOnPageErrors: bool = False  # True: sayfada JS/ağ hatası olursa test kalır (B1)
     steps: list[Any]
 
     @field_validator("baseUrl")
@@ -144,6 +145,7 @@ class TestDefinition:
     step_timeout: int
     test_id_attribute: str
     steps: list[StepSpec]
+    fail_on_page_errors: bool = False
     source: str = "<metin>"
 
 
@@ -199,6 +201,7 @@ def parse_test(text: str, source: str = "<metin>") -> TestDefinition:
         timeout=header.timeout,
         step_timeout=header.stepTimeout,
         test_id_attribute=header.testIdAttribute,
+        fail_on_page_errors=header.failOnPageErrors,
         steps=steps,
         source=source,
     )

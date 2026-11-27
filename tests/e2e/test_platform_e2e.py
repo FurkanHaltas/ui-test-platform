@@ -91,6 +91,8 @@ def test_passing_run_shows_passed_report(page: Page, platform):
     steps = page.locator("table.steps tbody tr")
     expect(steps).to_have_count(15)
     expect(page.locator("tr.step-failed")).to_have_count(0)
+    # Sürüm 1.0 temiz: sayfa hatası bölümü hiç yok
+    expect(page.locator("#sayfa-hatalari")).to_have_count(0)
     # Son adım ekran görüntüsü aldı ve sayfada görünüyor
     expect(page.get_by_alt_text("15. adımın ekran görüntüsü")).to_be_visible()
 
@@ -107,6 +109,13 @@ def test_regression_in_v2_is_caught_with_evidence(page: Page, platform):
     expect(failed).to_have_count(1)
     expect(failed).to_contain_text('testId="sepet-toplami"')
     expect(page.locator("tr.step-skipped")).to_have_count(5)
+
+    # B1: test hiç sormadığı halde 2.0'daki sayfa hataları da raporlanır
+    errors = page.locator("#sayfa-hatalari")
+    expect(errors.get_by_role("heading")).to_have_text("⚠ Sayfa hataları (3)")
+    expect(errors).to_contain_text("Kampanya servisine ulaşılamadı")
+    expect(errors).to_contain_text("HTTP 404")
+    expect(errors).to_contain_text("TypeError")
 
     # Hata anının ekran görüntüsü gerçekten yüklendi mi? (bozuk resim değil)
     shot = page.get_by_alt_text("10. adımın ekran görüntüsü")

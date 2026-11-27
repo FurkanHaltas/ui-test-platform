@@ -158,3 +158,8 @@ select { font: inherit; font-size: 14px; padding: 6px 8px; border-radius: 6px; b
 .visual-compare img { display: block; width: 100%; border: 1px solid var(--border); border-radius: 6px; }
 .visual-compare figcaption { font-size: 12px; color: var(--muted); text-align: center; margin-top: 4px; }
 form.accept { margin-top: 10px; }
+
+/* Sayfa hataları (B1) */
+.warn-link { color: var(--warn); font-weight: 700; }
+.page-errors h2 { color: var(--warn); }
+.url-cell { word-break: break-all; margin-top: 2px; }
