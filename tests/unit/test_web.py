@@ -200,3 +200,25 @@ def test_report_without_page_errors_has_no_section(client, conn):
     db.finish_run(conn, run_id, "passed", 10, None, json.dumps({"steps": [], "page_errors": []}))
     assert "Sayfa hataları" not in client.get(f"/runs/{run_id}").text
 
+
+def test_flaky_run_shows_badge_and_previous_attempts(client, conn):
+    test_id = create(client)
+    run_id = db.create_run(conn, db.get_test(conn, test_id))
+    db.claim_next_run(conn)
+    previous = {
+        "attempt": 1, "status": "failed", "duration_ms": 600, "error": "2. adım (expectVisible): zaman aşımı",
+        "trace": "artifacts/runs/9/a/trace.zip",
+        "steps": [{"number": 2, "kind": "expectVisible", "description": 'expectVisible text="X"',
+                   "status": "failed", "screenshot": "artifacts/runs/9/a/hata-adim-2.png"}],
+    }
+    result = {"attempt": 2, "flaky": True, "steps": [], "previous_attempts": [previous]}
+    db.finish_run(conn, run_id, "passed", 900, None, json.dumps(result), flaky=True)
+
+    report = client.get(f"/runs/{run_id}").text
+    assert "Kararsız" in report
+    assert "Önceki denemeler (1)" in report
+    assert "2. denemede geçti" in report
+    assert 'src="/artifacts/runs/9/a/hata-adim-2.png"' in report
+    assert 'href="/artifacts/runs/9/a/trace.zip"' in report
+    assert "Kararsız" in client.get("/runs").text  # koşu listesinde rozet
+    assert "Kararsız" in client.get("/").text  # test listesinde son durum

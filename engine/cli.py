@@ -118,6 +118,12 @@ def load_all(files: list[Path]):
 def print_run(run: RunResult) -> None:
     print()
     print(f"{ICONS[run.status]} {run.test_name}  {GRAY}({format_ms(run.duration_ms)}, {run.source}){RESET}")
+    if run.previous_attempts:
+        label = (f"{YELLOW}⚠ Kararsız: {run.attempt}. denemede geçti{RESET}" if run.flaky
+                 else f"{RED}{run.attempt} denemenin hepsinde kaldı{RESET}")
+        print(f"    {label}")
+        for prev in run.previous_attempts:
+            print(f"    {GRAY}{prev.attempt}. deneme kaldı: {prev.error}{RESET}")
     for s in run.steps:
         timing = f"{GRAY}{format_ms(s.duration_ms):>7}{RESET}" if s.status != "skipped" else " " * 7
         print(f"    {ICONS[s.status]} {s.number:>2}. {timing}  {s.description}")

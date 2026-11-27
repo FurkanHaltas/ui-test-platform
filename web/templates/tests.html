@@ -29,7 +29,7 @@
     <tr>
       <td><a href="/tests/{{ t.id }}" class="strong">{{ t.name }}</a></td>
       <td>
-        {% if t.last_run_id %}<a href="/runs/{{ t.last_run_id }}">{{ badge(t.last_run_status) }}</a>
+        {% if t.last_run_id %}<a href="/runs/{{ t.last_run_id }}">{{ badge(t.last_run_status, t.last_run_flaky) }}</a>
         {% else %}{{ badge(None) }}{% endif %}
       </td>
       <td class="muted">{{ t.updated_at|time }}</td>

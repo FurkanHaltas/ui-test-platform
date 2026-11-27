@@ -79,3 +79,37 @@ def test_list_runs_filters(conn):
     db.claim_next_run(conn)  # A'nın koşusu running olur
     assert len(db.list_runs(conn, test_id=b["id"])) == 1
     assert [r["test_name"] for r in db.list_runs(conn, status="queued")] == ["B"]
+
+
+def test_migration_adds_flaky_column_to_old_database(tmp_path, monkeypatch):
+    """B2 öncesi oluşturulmuş bir veritabanı: runs tablosunda flaky sütunu yok."""
+    import sqlite3
+
+    path = tmp_path / "eski.db"
+    old = sqlite3.connect(path)
+    old.executescript("""
+        CREATE TABLE tests (id INTEGER PRIMARY KEY, name TEXT, yaml TEXT, created_at TEXT, updated_at TEXT);
+        CREATE TABLE runs (id INTEGER PRIMARY KEY, test_id INTEGER, test_name TEXT, yaml TEXT,
+                           status TEXT, created_at TEXT, started_at TEXT, finished_at TEXT,
+                           duration_ms INTEGER, error TEXT, result_json TEXT);
+        INSERT INTO tests VALUES (1, 'A', 'y', 't', 't');
+        INSERT INTO runs (test_id, test_name, yaml, status, created_at) VALUES (1, 'A', 'y', 'passed', 't');
+    """)
+    old.commit()
+    old.close()
+
+    monkeypatch.setenv("UITP_DB", str(path))
+    conn = db.connect()
+    db.init_db(conn)
+    run = db.list_runs(conn)[0]
+    assert run["flaky"] == 0  # sütun eklendi, eski kayıt korundu
+    assert run["status"] == "passed"
+    db.init_db(conn)  # ikinci kez çalıştırmak zararsız
+    conn.close()
+
+
+def test_finish_run_stores_flaky(conn):
+    run_id = db.create_run(conn, make_test(conn))
+    db.claim_next_run(conn)
+    db.finish_run(conn, run_id, "passed", 10, None, "{}", flaky=True)
+    assert db.get_run(conn, run_id)["flaky"] == 1

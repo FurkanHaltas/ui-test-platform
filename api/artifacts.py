@@ -21,4 +21,6 @@ def add_artifact_urls(result: dict) -> dict:
         step["baseline_url"] = to_url(step.get("baseline"))
         step["diff_url"] = to_url(step.get("diff"))
     result["trace_url"] = to_url(result.get("trace"))
+    for previous in result.get("previous_attempts", []):  # tekrar denemeler (B2)
+        add_artifact_urls(previous)
     return result

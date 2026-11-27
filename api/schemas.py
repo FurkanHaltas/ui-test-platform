@@ -21,6 +21,7 @@ class TestOut(BaseModel):
     updated_at: str
     last_run_id: Optional[int] = None
     last_run_status: Optional[str] = None
+    last_run_flaky: Optional[bool] = None
 
 
 class ValidationOut(BaseModel):
@@ -39,6 +40,7 @@ class RunOut(BaseModel):
     finished_at: Optional[str] = None
     duration_ms: Optional[int] = None
     error: Optional[str] = None
+    flaky: bool = False  # önce kaldı, tekrar denemede geçti (B2)
 
 
 class RunDetailOut(RunOut):

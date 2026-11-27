@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mini Market · Kampanya</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!--
+    KARARSIZ SAYFA (B2 demosu): Kampanya, 0–2 sn arasında RASTGELE bir gecikmeyle yüklenir
+    (yükü değişen yavaş bir sunucuyu taklit eder). 1 sn bekleyen bir test bazen geçer, bazen kalır.
+    examples/demo/kararsiz-kampanya.yaml bu sayfayı `retries: 3` ile test eder.
+  -->
+  <header class="ust"><strong>Mini Market</strong><nav><a href="urunler.html">Ürünler</a></nav></header>
+  <main class="kutu">
+    <p class="soluk" id="yukleniyor">Kampanya yükleniyor…</p>
+    <section id="kampanya" hidden>
+      <h1>Haftanın kampanyası</h1>
+      <p>Mekanik klavyede <strong>%20 indirim</strong>.</p>
+    </section>
+  </main>
+  <script>
+    const gecikme = Math.floor(Math.random() * 2000);
+    setTimeout(() => {
+      document.getElementById("yukleniyor").remove();
+      document.getElementById("kampanya").hidden = false;
+    }, gecikme);
+  </script>
+</body>
+</html>

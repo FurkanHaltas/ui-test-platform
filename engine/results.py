@@ -50,6 +50,10 @@ class RunResult(BaseModel):
     error: Optional[str] = None  # testin neden kaldığı (ilk başarısız adımın hatası)
     trace: Optional[str] = None  # sadece kalan testlerde kaydedilir
     page_errors: list[PageError] = []  # test yazılmadan yakalanan sayfa hataları (B1)
+    # Tekrar deneme (B2): bu sonuç kaçıncı denemenin? Önceki denemeler tam halleriyle saklanır.
+    attempt: int = 1
+    flaky: bool = False  # True: önce kaldı, sonraki bir denemede geçti (kararsız test)
+    previous_attempts: list["RunResult"] = []
     steps: list[StepResult]
 
     def save_json(self, path: Path) -> None:

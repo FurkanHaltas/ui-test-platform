@@ -1,0 +1,14 @@
+# TEKRAR DENEME ve KARARSIZ TEST örneği (B2).
+# Kampanya sayfası 0–2 sn arasında rastgele gecikmeyle yüklenir; bu test sadece 1 sn bekler.
+# Yani her denemede kalma ihtimali ~%50. `retries: 3` ile kalırsa en fazla 3 kez daha denenir:
+#   - ilk denemede geçerse  -> Geçti
+#   - önce kalıp sonra geçerse -> Geçti + "Kararsız" (önceki denemeler kanıtlarıyla raporda)
+#   - 4 denemede de kalırsa -> Kaldı (~%6 ihtimal)
+# Birkaç kez koşturup farklı sonuçları görebilirsiniz.
+name: Demo - Kampanya (kararsız)
+baseUrl: http://127.0.0.1:8000/demo
+retries: 3
+steps:
+  - goto: /kampanya.html
+  - expectVisible: { role: heading, name: Haftanın kampanyası, timeout: 1000 }
+  - screenshot: kampanya

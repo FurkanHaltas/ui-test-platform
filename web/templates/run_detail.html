@@ -18,12 +18,13 @@
 </div>
 
 <section class="summary summary-{{ run.status }}">
-  <div class="summary-status">{{ badge(run.status) }}</div>
+  <div class="summary-status">{{ badge(run.status, run.flaky) }}</div>
   <dl>
     <div><dt>Kuyruğa alındı</dt><dd>{{ run.created_at|time }}</dd></div>
     <div><dt>Başladı</dt><dd>{{ run.started_at|time }}</dd></div>
     <div><dt>Bitti</dt><dd>{{ run.finished_at|time }}</dd></div>
     <div><dt>Süre</dt><dd>{{ run.duration_ms|ms }}</dd></div>
+    {% if result and result.previous_attempts %}<div><dt>Deneme</dt><dd><a href="#onceki-denemeler">{{ result.attempt }}. deneme</a></dd></div>{% endif %}
     {% if result and result.page_errors %}<div><dt>Sayfa hataları</dt><dd><a href="#sayfa-hatalari" class="warn-link">⚠ {{ result.page_errors|length }}</a></dd></div>{% endif %}
     {% if result %}<div><dt>Hedef</dt><dd><a href="{{ result.base_url }}" target="_blank" rel="noopener">{{ result.base_url }}</a></dd></div>{% endif %}
   </dl>
@@ -42,6 +43,28 @@
   <strong>{% if run.status == "error" %}Test çalıştırılamadı (platform hatası){% else %}Testin kaldığı yer{% endif %}</strong>
   <p>{{ run.error }}</p>
 </div>
+{% endif %}
+
+{% if result and result.previous_attempts %}
+<section id="onceki-denemeler" class="attempts">
+  <h2>Önceki denemeler ({{ result.previous_attempts|length }})</h2>
+  <p class="small muted">
+    {% if run.flaky %}Bu test önce kaldı, {{ result.attempt }}. denemede geçti: <strong>kararsız (flaky)</strong>.
+      Tekrar deneme hatayı gizlemez; kararsızlığın nedeni (yavaş sunucu, sıra bağımlılığı, rastgele veri…) araştırılmalı.
+    {% else %}Test {{ result.attempt }} denemenin hepsinde kaldı; hata kalıcı.{% endif %}
+    Her deneme temiz bir tarayıcı oturumuyla baştan koşturuldu (YAML: <code>retries</code>).</p>
+  {% for prev in result.previous_attempts %}
+  <details class="attempt">
+    <summary>{{ prev.attempt }}. deneme · {{ badge(prev.status) }} · {{ prev.duration_ms|ms }} · <span class="muted">{{ prev.error }}</span></summary>
+    {% for s in prev.steps if s.status == "failed" %}
+      <p><code>{{ s.number }}. {{ s.description }}</code></p>
+      {% if s.screenshot_url %}<a href="{{ s.screenshot_url }}" target="_blank" rel="noopener" class="shot">
+        <img src="{{ s.screenshot_url }}" alt="{{ prev.attempt }}. deneme, {{ s.number }}. adımın ekran görüntüsü" loading="lazy"></a>{% endif %}
+    {% endfor %}
+    {% if prev.trace_url %}<p><a href="{{ prev.trace_url }}" download class="btn btn-small">{{ prev.attempt }}. denemenin trace.zip dosyası</a></p>{% endif %}
+  </details>
+  {% endfor %}
+</section>
 {% endif %}
 
 {% if result and result.page_errors %}

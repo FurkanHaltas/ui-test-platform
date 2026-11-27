@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS runs (
     finished_at  TEXT,
     duration_ms  INTEGER,
     error        TEXT,
-    result_json  TEXT                     -- motorun RunResult çıktısı (adımlar dahil)
+    result_json  TEXT,                    -- motorun RunResult çıktısı (adımlar dahil)
+    flaky        INTEGER NOT NULL DEFAULT 0  -- 1: önce kaldı, tekrar denemede geçti (B2)
 );
 
 CREATE INDEX IF NOT EXISTS idx_runs_status ON runs(status, id);
@@ -75,6 +76,19 @@ def get_conn():
 
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA)
+    migrate(conn)
+
+
+def migrate(conn: sqlite3.Connection) -> None:
+    """Eski sürümle oluşturulmuş veritabanlarını günceller (şema göçü).
+
+    `CREATE TABLE IF NOT EXISTS` var olan bir tabloya yeni sütun eklemez. Bu yüzden sonradan
+    eklenen sütunları burada kontrol edip yoksa ekliyoruz; mevcut veriler korunur.
+    """
+    columns = {row["name"] for row in conn.execute("PRAGMA table_info(runs)")}
+    if "flaky" not in columns:  # B2 ile eklendi
+        with conn:
+            conn.execute("ALTER TABLE runs ADD COLUMN flaky INTEGER NOT NULL DEFAULT 0")
 
 
 def now() -> str:
@@ -122,7 +136,8 @@ def list_tests(conn) -> list[sqlite3.Row]:
 _TEST_SELECT = """
 SELECT t.*,
        (SELECT r.id FROM runs r WHERE r.test_id = t.id ORDER BY r.id DESC LIMIT 1) AS last_run_id,
-       (SELECT r.status FROM runs r WHERE r.test_id = t.id ORDER BY r.id DESC LIMIT 1) AS last_run_status
+       (SELECT r.status FROM runs r WHERE r.test_id = t.id ORDER BY r.id DESC LIMIT 1) AS last_run_status,
+       (SELECT r.flaky FROM runs r WHERE r.test_id = t.id ORDER BY r.id DESC LIMIT 1) AS last_run_flaky
 FROM tests t
 """
 
@@ -176,15 +191,16 @@ def claim_next_run(conn) -> Optional[sqlite3.Row]:
 
 
 def finish_run(conn, run_id: int, status: str, duration_ms: Optional[int],
-               error: Optional[str], result_json: Optional[str]) -> None:
+               error: Optional[str], result_json: Optional[str], flaky: bool = False) -> None:
     assert status in FINAL_STATUSES
     with conn:
         conn.execute(
             """
-            UPDATE runs SET status = ?, finished_at = ?, duration_ms = ?, error = ?, result_json = ?
+            UPDATE runs SET status = ?, finished_at = ?, duration_ms = ?, error = ?, result_json = ?,
+                            flaky = ?
             WHERE id = ?
             """,
-            (status, now(), duration_ms, error, result_json, run_id),
+            (status, now(), duration_ms, error, result_json, int(flaky), run_id),
         )
 
 

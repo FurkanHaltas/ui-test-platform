@@ -7,6 +7,10 @@ Akış (tek test için):
   4. Adımlar sırayla çalışır. Bir adım kalırsa: ekran görüntüsü alınır, kalan adımlar
      "skipped" olur, trace.zip kaydedilir.
   5. Sonuç result.json olarak yazılır ve RunResult döndürülür.
+
+Tekrar deneme (B2): YAML'da `retries: N` varsa kalan test temiz bir oturumla baştan, en fazla
+N kez daha koşturulur (run_with_retries). Sonradan geçerse sonuç "geçti" ama "kararsız" olarak
+işaretlenir; önceki denemeler kanıtlarıyla saklanır. Tekrar deneme hatayı gizlemez, görünür kılar.
 """
 
 import time
@@ -48,17 +52,42 @@ def run_tests(
             for test in tests:
                 # testId locator'ının hangi HTML özniteliğine bakacağı (ör. saucedemo: data-test)
                 playwright.selectors.set_test_id_attribute(test.test_id_attribute)
-                results.append(run_test(browser, test, artifacts_dir, baselines_dir, update_baselines))
+                results.append(run_with_retries(browser, test, artifacts_dir, baselines_dir, update_baselines))
         finally:
             browser.close()
     return results
 
 
+def run_with_retries(browser: Browser, test: TestDefinition, artifacts_dir: Path,
+                     baselines_dir: Path = DEFAULT_BASELINES_DIR,
+                     update_baselines: bool = False) -> RunResult:
+    """Testi koşturur; kalırsa `test.retries` kez daha dener. Son denemenin sonucunu döndürür."""
+    attempts: list[RunResult] = []
+    for attempt in range(1, test.retries + 2):
+        result = run_test(browser, test, artifacts_dir, baselines_dir, update_baselines, attempt)
+        attempts.append(result)
+        if result.status == "passed":
+            break
+
+    final = attempts[-1]
+    if len(attempts) > 1:
+        final.previous_attempts = attempts[:-1]
+        final.flaky = final.status == "passed"  # önce kaldı, sonra geçti
+        # Toplam süre ve başlangıç: bütün denemeler dahil
+        final.started_at = attempts[0].started_at
+        final.duration_ms = sum(a.duration_ms for a in attempts)
+        final.save_json(artifacts_dir / final.run_id / "result.json")
+    return final
+
+
 def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
-             baselines_dir: Path = DEFAULT_BASELINES_DIR, update_baselines: bool = False) -> RunResult:
-    """Tek bir testi koşturur ve sonucunu artifacts/<run_id>/result.json'a yazar."""
+             baselines_dir: Path = DEFAULT_BASELINES_DIR, update_baselines: bool = False,
+             attempt: int = 1) -> RunResult:
+    """Testi bir kez koşturur ve sonucunu artifacts/<run_id>/result.json'a yazar."""
     started_at = datetime.now()
     run_id = f"{started_at:%Y%m%d-%H%M%S}_{slugify(test.name)}"
+    if attempt > 1:
+        run_id += f"_deneme-{attempt}"  # aynı saniyede başlayan denemeler birbirini ezmesin
     run_dir = artifacts_dir / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -120,6 +149,7 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
         error=run_error,
         trace=trace_path,
         page_errors=page_errors,
+        attempt=attempt,
         steps=step_results,
     )
     run.save_json(run_dir / "result.json")

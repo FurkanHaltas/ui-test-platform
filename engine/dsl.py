@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 import yaml
-from pydantic import BaseModel, ConfigDict, PositiveInt, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PositiveInt, ValidationError, field_validator, model_validator
 
 # Locator (öğe bulma) türleri, öncelik sırasıyla. "name" sadece "role" ile birlikte kullanılır.
 LOCATOR_KINDS = ["role", "label", "testId", "text", "css"]
@@ -93,6 +93,7 @@ class TestHeader(BaseModel):
     stepTimeout: PositiveInt = 10_000  # adım başına varsayılan zaman aşımı (ms)
     testIdAttribute: str = "data-testid"  # testId locator'ının baktığı HTML özniteliği
     failOnPageErrors: bool = False  # True: sayfada JS/ağ hatası olursa test kalır (B1)
+    retries: int = Field(0, ge=0, le=5)  # kalan test en fazla kaç kez yeniden denensin (B2)
     steps: list[Any]
 
     @field_validator("baseUrl")
@@ -146,6 +147,7 @@ class TestDefinition:
     test_id_attribute: str
     steps: list[StepSpec]
     fail_on_page_errors: bool = False
+    retries: int = 0
     source: str = "<metin>"
 
 
@@ -202,6 +204,7 @@ def parse_test(text: str, source: str = "<metin>") -> TestDefinition:
         step_timeout=header.stepTimeout,
         test_id_attribute=header.testIdAttribute,
         fail_on_page_errors=header.failOnPageErrors,
+        retries=header.retries,
         steps=steps,
         source=source,
     )
@@ -260,6 +263,10 @@ def _translate_error(err: dict) -> str:
         return f"'{field}' metin olmalı"
     if kind in ("int_type", "int_parsing", "int_from_float"):
         return f"'{field}' tam sayı olmalı (milisaniye)"
+    if kind in ("greater_than_equal", "less_than_equal"):
+        limit = err["ctx"].get("ge", err["ctx"].get("le"))
+        word = "küçük" if kind == "greater_than_equal" else "büyük"
+        return f"'{field}' {limit} değerinden {word} olamaz"
     if kind == "greater_than":
         return f"'{field}' sıfırdan büyük olmalı"
     if kind == "list_type":

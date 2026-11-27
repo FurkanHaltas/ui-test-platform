@@ -75,6 +75,15 @@ def test_fail_on_page_errors_option():
     assert "failOnPageErrors" in msg
 
 
+def test_retries_option_and_limits():
+    assert parse_test(HEADER + "  - goto: /\n").retries == 0
+    assert parse_test(HEADER.replace("steps:", "retries: 3\nsteps:") + "  - goto: /\n").retries == 3
+    msg = errors_of(HEADER.replace("steps:", "retries: 6\nsteps:") + "  - goto: /\n")
+    assert "'retries' 5 değerinden büyük olamaz" in msg
+    msg = errors_of(HEADER.replace("steps:", "retries: -1\nsteps:") + "  - goto: /\n")
+    assert "'retries' 0 değerinden küçük olamaz" in msg
+
+
 def test_numeric_value_becomes_text():
     test = parse_test(HEADER + "  - fill: { css: '#zip', value: 34000 }\n")
     assert test.steps[0].args.value == "34000"

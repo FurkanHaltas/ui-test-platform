@@ -1,8 +1,9 @@
 {# Tekrar kullanılan küçük parçalar #}
 
-{% macro badge(status) -%}
+{% macro badge(status, flaky=False) -%}
   {%- if status -%}
     <span class="badge badge-{{ status }}">{{ STATUS_LABELS.get(status, status) }}</span>
+    {%- if flaky %} <span class="badge badge-flaky" title="Önce kaldı, tekrar denemede geçti">Kararsız</span>{% endif -%}
   {%- else -%}
     <span class="badge badge-none">Koşulmadı</span>
   {%- endif -%}

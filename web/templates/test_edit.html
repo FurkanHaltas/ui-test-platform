@@ -48,7 +48,7 @@
     {% if runs %}
     <ul class="run-list">
       {% for r in runs %}
-      <li><a href="/runs/{{ r.id }}">#{{ r.id }}</a> {{ badge(r.status) }}
+      <li><a href="/runs/{{ r.id }}">#{{ r.id }}</a> {{ badge(r.status, r.flaky) }}
           <span class="muted small">{{ r.created_at|time }} · {{ r.duration_ms|ms }}</span></li>
       {% endfor %}
     </ul>
@@ -69,7 +69,7 @@
     <p class="small"><strong>Locator</strong> (her adımda tam olarak biri):<br>
       <code>role: button, name: Giriş yap</code> · <code>label: Şifre</code> · <code>testId: sepet-sayaci</code> ·
       <code>text: Ürünler</code> · <code>css: "#id"</code></p>
-    <p class="small muted">İsteğe bağlı: kökte <code>timeout</code>, <code>stepTimeout</code> (ms), <code>testIdAttribute</code>, <code>failOnPageErrors: true</code> (sayfada JS/ağ hatası olursa test kalsın);
+    <p class="small muted">İsteğe bağlı: kökte <code>timeout</code>, <code>stepTimeout</code> (ms), <code>testIdAttribute</code>, <code>failOnPageErrors: true</code> (sayfada JS/ağ hatası olursa test kalsın), <code>retries: 2</code> (kalırsa en fazla 2 kez yeniden dene);
       adımda <code>timeout</code>. Virgül içeren değerleri tırnağa alın.</p>
   </aside>
 </div>

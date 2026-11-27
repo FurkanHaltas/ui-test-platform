@@ -35,9 +35,10 @@ def process_next(conn, channel: Optional[str] = None) -> bool:
         [result] = run_tests([test], artifacts_dir=ARTIFACTS_DIR / "runs" / str(run["id"]),
                              channel=channel)
         db.finish_run(conn, run["id"], result.status, result.duration_ms,
-                      result.error, result.model_dump_json())
+                      result.error, result.model_dump_json(), flaky=result.flaky)
         icon = "✓" if result.status == "passed" else "✗"
-        print(f"  {icon} #{run['id']} {result.status} ({result.duration_ms} ms)", flush=True)
+        flaky = f", kararsız: {result.attempt}. denemede geçti" if result.flaky else ""
+        print(f"  {icon} #{run['id']} {result.status} ({result.duration_ms} ms{flaky})", flush=True)
     except Exception as e:
         # Test hiç çalıştırılamadı (tarayıcı açılamadı vb.): testin değil platformun hatası.
         message = f"koşu başlatılamadı: {str(e).splitlines()[0] if str(e) else type(e).__name__}"
