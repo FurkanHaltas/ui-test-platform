@@ -118,6 +118,15 @@ def load_all(files: list[Path]):
 def print_run(run: RunResult) -> None:
     print()
     print(f"{ICONS[run.status]} {run.test_name}  {GRAY}({format_ms(run.duration_ms)}, {run.source}){RESET}")
+    if run.rows:
+        failed = sum(r.status == "failed" for r in run.rows)
+        print(f"    Veri odaklı: {len(run.rows)} satır, {len(run.rows) - failed} geçti, {failed} kaldı")
+        for i, row in enumerate(run.rows, start=1):
+            values = ", ".join(f"{k}={v}" for k, v in (row.data_row or {}).items())
+            flaky = f" {YELLOW}(kararsız){RESET}" if row.flaky else ""
+            print(f"    {ICONS[row.status]} {i}. satır  {GRAY}{format_ms(row.duration_ms):>7}{RESET}  {values}{flaky}")
+            if row.error:
+                print(f"         {RED}{row.error}{RESET}")
     if run.previous_attempts:
         label = (f"{YELLOW}⚠ Kararsız: {run.attempt}. denemede geçti{RESET}" if run.flaky
                  else f"{RED}{run.attempt} denemenin hepsinde kaldı{RESET}")

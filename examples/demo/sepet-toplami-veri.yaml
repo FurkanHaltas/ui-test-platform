@@ -1,0 +1,22 @@
+# VERİ ODAKLI TEST örneği (B3): farklı ürün kombinasyonlarında sepet toplamı doğru mu?
+# Sürüm 1.0'da 3 satır da geçer.
+# baseUrl'i .../demo-v2 yapıp koşturun: 1. ve 2. satır kalır, 3. satır GEÇER.
+# Neden? 2.0'daki hata sadece sepette birden fazla FARKLI ürün varken ortaya çıkıyor
+# (3. satırda aynı üründen iki tane var, sepette tek satır olur). Veri odaklı test, hatanın
+# hangi koşulda oluştuğunu da gösterir.
+name: Demo - Sepet toplamı (veri odaklı)
+baseUrl: http://127.0.0.1:8000/demo
+stepTimeout: 4000   # 2.0'da kalan satırlar çabuk sonuçlansın (varsayılan 10 sn)
+data:
+  - { urun1: kulaklik, urun2: klavye,   toplam: 3.650 TL }
+  - { urun1: fare,     urun2: kablo,    toplam: 1.000 TL }
+  - { urun1: kulaklik, urun2: kulaklik, toplam: 2.500 TL }
+steps:
+  - goto: /
+  - fill: { label: Kullanıcı adı, value: demo }
+  - fill: { label: Şifre, value: demo123 }
+  - click: { role: button, name: Giriş yap }
+  - click: { testId: "sepete-ekle-${urun1}" }
+  - click: { testId: "sepete-ekle-${urun2}" }
+  - click: { testId: sepet-linki }
+  - expectText: { testId: sepet-toplami, value: "${toplam}" }

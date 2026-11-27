@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import badge, worker_hint %}
+{% from "_macros.html" import badge, worker_hint, steps_table %}
 {% set nav = "runs" %}
 {% set active = run.status in ("queued", "running") %}
 {% set auto_refresh = 2 if active else None %}
@@ -24,6 +24,7 @@
     <div><dt>Başladı</dt><dd>{{ run.started_at|time }}</dd></div>
     <div><dt>Bitti</dt><dd>{{ run.finished_at|time }}</dd></div>
     <div><dt>Süre</dt><dd>{{ run.duration_ms|ms }}</dd></div>
+    {% if result and result.rows %}<div><dt>Veri satırı</dt><dd><a href="#veri-satirlari">{{ result.rows|length }} satır</a></dd></div>{% endif %}
     {% if result and result.previous_attempts %}<div><dt>Deneme</dt><dd><a href="#onceki-denemeler">{{ result.attempt }}. deneme</a></dd></div>{% endif %}
     {% if result and result.page_errors %}<div><dt>Sayfa hataları</dt><dd><a href="#sayfa-hatalari" class="warn-link">⚠ {{ result.page_errors|length }}</a></dd></div>{% endif %}
     {% if result %}<div><dt>Hedef</dt><dd><a href="{{ result.base_url }}" target="_blank" rel="noopener">{{ result.base_url }}</a></dd></div>{% endif %}
@@ -90,45 +91,29 @@
 </section>
 {% endif %}
 
-{% if result %}
+{% if result and result.rows %}
+{% set failed_rows = result.rows | selectattr("status", "equalto", "failed") | list %}
+<section id="veri-satirlari" class="data-rows">
+  <h2>Veri satırları ({{ result.rows|length }}) · {{ result.rows|length - failed_rows|length }} geçti, {{ failed_rows|length }} kaldı</h2>
+  <p class="small muted">Aynı adımlar, YAML'daki <code>data</code> tablosunun her satırıyla ayrı ayrı koşturuldu
+    (<code>${alan}</code> yer tutucuları satırdaki değerlerle dolduruldu). Kalan satırlar açık gösteriliyor.</p>
+  {% for row in result.rows %}
+  <details class="attempt" {% if row.status == "failed" %}open{% endif %}>
+    <summary>{{ loop.index }}. satır · {{ badge(row.status, row.flaky) }} · {{ row.duration_ms|ms }} ·
+      <span class="data-values">{% for k, v in (row.data_row or {}).items() %}<code>{{ k }}={{ v if v != "" else "(boş)" }}</code> {% endfor %}</span></summary>
+    {% if row.error %}<div class="step-error">{{ row.error }}</div>{% endif %}
+    {% if row.page_errors %}<p class="small warn-link">⚠ {{ row.page_errors|length }} sayfa hatası</p>{% endif %}
+    {% if row.previous_attempts %}<p class="small muted">{{ row.attempt }}. denemenin sonucu ({{ row.previous_attempts|length }} önceki deneme)</p>{% endif %}
+    {{ steps_table(row.steps) }}
+    {% if row.trace_url %}<p><a href="{{ row.trace_url }}" download class="btn btn-small">{{ loop.index }}. satırın trace.zip dosyası</a></p>{% endif %}
+  </details>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if result and result.steps %}
 <h2>Adımlar</h2>
-<table class="table steps">
-  <thead><tr><th>#</th><th>Adım</th><th>Durum</th><th class="right">Süre</th></tr></thead>
-  <tbody>
-    {% for s in result.steps %}
-    <tr class="step-{{ s.status }}">
-      <td>{{ s.number }}</td>
-      <td>
-        <code>{{ s.description }}</code>
-        {% if s.error %}<div class="step-error">{{ s.error }}</div>{% endif %}
-        {% if s.note and not s.error %}<div class="step-note">{{ s.note }}</div>{% endif %}
-        {% if s.diff_url %}
-        <div class="visual-compare">
-          {% for label, url in [("Referans", s.baseline_url), ("Bu koşu", s.screenshot_url), ("Fark (kırmızı)", s.diff_url)] %}
-          <figure>
-            <a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ url }}" alt="{{ s.number }}. adım: {{ label }}" loading="lazy"></a>
-            <figcaption>{{ label }}</figcaption>
-          </figure>
-          {% endfor %}
-        </div>
-        {% if s.status == "failed" %}
-        <form method="post" action="/runs/{{ run.id }}/steps/{{ s.number }}/accept" class="accept"
-              onsubmit="return confirm('Bu görüntü yeni referans olsun mu? Fark bilinçli bir değişiklikse onaylayın.')">
-          <button type="submit" class="btn btn-small">Bu görüntüyü yeni referans yap</button>
-        </form>
-        {% endif %}
-        {% elif s.screenshot_url %}
-        <a href="{{ s.screenshot_url }}" target="_blank" rel="noopener" class="shot">
-          <img src="{{ s.screenshot_url }}" alt="{{ s.number }}. adımın ekran görüntüsü" loading="lazy">
-        </a>
-        {% endif %}
-      </td>
-      <td>{{ badge(s.status) }}</td>
-      <td class="right">{{ s.duration_ms|ms if s.status != "skipped" else "—" }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+{{ steps_table(result.steps, run.id) }}
 
 {% if result.trace_url %}
 <section class="trace">

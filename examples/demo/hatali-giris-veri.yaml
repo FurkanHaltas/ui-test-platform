@@ -1,0 +1,17 @@
+# VERİ ODAKLI TEST örneği (B3): aynı adımlar, 4 farklı veri satırıyla 4 kez koşar.
+# Her satır ayrı bir alt koşudur; raporda satır satır sonuç görünür.
+# Not: süslü parantez içinde ${...} kullanırken değeri tırnağa alın.
+name: Demo - Hatalı giriş senaryoları (veri odaklı)
+baseUrl: http://127.0.0.1:8000/demo
+data:
+  - { kullanici: kilitli, sifre: demo123, mesaj: "Bu hesap kilitlendi. Lütfen destek ile iletişime geçin." }
+  - { kullanici: demo,    sifre: yanlis,  mesaj: "Kullanıcı adı veya şifre hatalı." }
+  - { kullanici: "",      sifre: demo123, mesaj: "Kullanıcı adı zorunlu." }
+  - { kullanici: demo,    sifre: "",      mesaj: "Şifre zorunlu." }
+steps:
+  - goto: /
+  - fill: { label: Kullanıcı adı, value: "${kullanici}" }
+  - fill: { label: Şifre, value: "${sifre}" }
+  - click: { role: button, name: Giriş yap }
+  - expectText: { testId: hata-mesaji, value: "${mesaj}" }
+  - expectUrl: /

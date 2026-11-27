@@ -54,6 +54,9 @@ class RunResult(BaseModel):
     attempt: int = 1
     flaky: bool = False  # True: önce kaldı, sonraki bir denemede geçti (kararsız test)
     previous_attempts: list["RunResult"] = []
+    # Veri odaklı test (B3): ana sonuç satırları özetler; her satır kendi tam sonucuna sahip.
+    rows: list["RunResult"] = []
+    data_row: Optional[dict[str, str]] = None  # bu sonuç bir veri satırınınsa o satır
     steps: list[StepResult]
 
     def save_json(self, path: Path) -> None:

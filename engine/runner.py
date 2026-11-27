@@ -11,6 +11,9 @@ Akış (tek test için):
 Tekrar deneme (B2): YAML'da `retries: N` varsa kalan test temiz bir oturumla baştan, en fazla
 N kez daha koşturulur (run_with_retries). Sonradan geçerse sonuç "geçti" ama "kararsız" olarak
 işaretlenir; önceki denemeler kanıtlarıyla saklanır. Tekrar deneme hatayı gizlemez, görünür kılar.
+
+Veri odaklı test (B3): YAML'da `data:` tablosu varsa her satır ${alan} yer tutucuları doldurularak
+ayrı bir alt koşu olur (run_data_driven). Ana sonuç "N satırdan K'sı kaldı" diye özetler.
 """
 
 import time
@@ -52,10 +55,43 @@ def run_tests(
             for test in tests:
                 # testId locator'ının hangi HTML özniteliğine bakacağı (ör. saucedemo: data-test)
                 playwright.selectors.set_test_id_attribute(test.test_id_attribute)
-                results.append(run_with_retries(browser, test, artifacts_dir, baselines_dir, update_baselines))
+                run = run_data_driven if test.data else run_with_retries
+                results.append(run(browser, test, artifacts_dir, baselines_dir, update_baselines))
         finally:
             browser.close()
     return results
+
+
+def run_data_driven(browser: Browser, test: TestDefinition, artifacts_dir: Path,
+                    baselines_dir: Path = DEFAULT_BASELINES_DIR,
+                    update_baselines: bool = False) -> RunResult:
+    """Veri tablosunun her satırını ayrı koşturur (her satıra tekrar deneme de uygulanır)."""
+    started_at = datetime.now()
+    rows = [run_with_retries(browser, row_test, artifacts_dir, baselines_dir, update_baselines)
+            for row_test in test.expand_rows()]
+
+    failed = [r for r in rows if r.status == "failed"]
+    error = None
+    if failed:
+        error = f"{len(failed)}/{len(rows)} satır kaldı; ilki {failed[0].test_name}: {failed[0].error}"
+    run = RunResult(
+        run_id=f"{started_at:%Y%m%d-%H%M%S}_{slugify(test.name)}_veri",
+        test_name=test.name,
+        source=test.source,
+        base_url=test.base_url,
+        status="failed" if failed else "passed",
+        started_at=started_at,
+        finished_at=datetime.now(),
+        duration_ms=sum(r.duration_ms for r in rows),
+        error=error,
+        flaky=not failed and any(r.flaky for r in rows),
+        steps=[],  # adımlar her satırın kendi sonucunda
+        rows=rows,
+    )
+    run_dir = artifacts_dir / run.run_id
+    run_dir.mkdir(parents=True, exist_ok=True)
+    run.save_json(run_dir / "result.json")
+    return run
 
 
 def run_with_retries(browser: Browser, test: TestDefinition, artifacts_dir: Path,
@@ -150,6 +186,7 @@ def run_test(browser: Browser, test: TestDefinition, artifacts_dir: Path,
         trace=trace_path,
         page_errors=page_errors,
         attempt=attempt,
+        data_row=test.data_row,
         steps=step_results,
     )
     run.save_json(run_dir / "result.json")

@@ -12,3 +12,45 @@
 {% macro worker_hint() -%}
   <p class="hint">Koşu sırada bekliyorsa worker çalışmıyor olabilir. Ayrı bir terminalde: <code>python -m worker</code></p>
 {%- endmacro %}
+
+{# Adım tablosu: hem tek koşuda hem veri satırlarında kullanılır. run_id verilirse
+   görsel adımlarda "yeni referans yap" butonu gösterilir. #}
+{% macro steps_table(steps, run_id=None) -%}
+<table class="table steps">
+  <thead><tr><th>#</th><th>Adım</th><th>Durum</th><th class="right">Süre</th></tr></thead>
+  <tbody>
+    {% for s in steps %}
+    <tr class="step-{{ s.status }}">
+      <td>{{ s.number }}</td>
+      <td>
+        <code>{{ s.description }}</code>
+        {% if s.error %}<div class="step-error">{{ s.error }}</div>{% endif %}
+        {% if s.note and not s.error %}<div class="step-note">{{ s.note }}</div>{% endif %}
+        {% if s.diff_url %}
+        <div class="visual-compare">
+          {% for label, url in [("Referans", s.baseline_url), ("Bu koşu", s.screenshot_url), ("Fark (kırmızı)", s.diff_url)] %}
+          <figure>
+            <a href="{{ url }}" target="_blank" rel="noopener"><img src="{{ url }}" alt="{{ s.number }}. adım: {{ label }}" loading="lazy"></a>
+            <figcaption>{{ label }}</figcaption>
+          </figure>
+          {% endfor %}
+        </div>
+        {% if s.status == "failed" and run_id %}
+        <form method="post" action="/runs/{{ run_id }}/steps/{{ s.number }}/accept" class="accept"
+              onsubmit="return confirm('Bu görüntü yeni referans olsun mu? Fark bilinçli bir değişiklikse onaylayın.')">
+          <button type="submit" class="btn btn-small">Bu görüntüyü yeni referans yap</button>
+        </form>
+        {% endif %}
+        {% elif s.screenshot_url %}
+        <a href="{{ s.screenshot_url }}" target="_blank" rel="noopener" class="shot">
+          <img src="{{ s.screenshot_url }}" alt="{{ s.number }}. adımın ekran görüntüsü" loading="lazy">
+        </a>
+        {% endif %}
+      </td>
+      <td>{{ badge(s.status) }}</td>
+      <td class="right">{{ s.duration_ms|ms if s.status != "skipped" else "—" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{%- endmacro %}

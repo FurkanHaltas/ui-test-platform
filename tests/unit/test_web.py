@@ -222,3 +222,27 @@ def test_flaky_run_shows_badge_and_previous_attempts(client, conn):
     assert 'href="/artifacts/runs/9/a/trace.zip"' in report
     assert "Kararsız" in client.get("/runs").text  # koşu listesinde rozet
     assert "Kararsız" in client.get("/").text  # test listesinde son durum
+
+
+def test_data_driven_report_shows_rows(client, conn):
+    test_id = create(client)
+    run_id = db.create_run(conn, db.get_test(conn, test_id))
+    db.claim_next_run(conn)
+
+    def row(n, status, toplam, error=None):
+        return {"test_name": f"Sepet [{n}. satır]", "status": status, "duration_ms": 1000, "error": error,
+                "data_row": {"urun1": "kulaklik", "toplam": toplam},
+                "trace": f"artifacts/runs/7/r{n}/trace.zip" if error else None,
+                "steps": [{"number": 1, "kind": "expectText", "description": f'expectText = "{toplam}"',
+                           "status": status, "duration_ms": 10, "error": error, "screenshot": None}]}
+
+    result = {"steps": [], "rows": [row(1, "failed", "3.650 TL", "Actual value: 1.250 TL"),
+                                    row(2, "passed", "2.500 TL")]}
+    db.finish_run(conn, run_id, "failed", 2000, "1/2 satır kaldı", json.dumps(result))
+
+    page = client.get(f"/runs/{run_id}").text
+    assert "Veri satırları (2) · 1 geçti, 1 kaldı" in page
+    assert "<code>toplam=3.650 TL</code>" in page
+    assert "Actual value: 1.250 TL" in page
+    assert 'href="/artifacts/runs/7/r1/trace.zip"' in page  # satırın trace adresi çevrildi
+    assert "<h2>Adımlar</h2>" not in page  # ana sonuçta adım yok, adımlar satırlarda

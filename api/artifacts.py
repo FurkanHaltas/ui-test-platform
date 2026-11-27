@@ -23,4 +23,6 @@ def add_artifact_urls(result: dict) -> dict:
     result["trace_url"] = to_url(result.get("trace"))
     for previous in result.get("previous_attempts", []):  # tekrar denemeler (B2)
         add_artifact_urls(previous)
+    for row in result.get("rows", []):  # veri satırları (B3)
+        add_artifact_urls(row)
     return result

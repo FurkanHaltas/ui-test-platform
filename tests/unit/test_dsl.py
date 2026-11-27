@@ -205,3 +205,55 @@ def test_missing_file():
     with pytest.raises(DslError) as info:
         load_test("yok/boyle-bir-dosya.yaml")
     assert "dosya okunamadı" in info.value.errors[0]
+
+
+# --- Veri odaklı testler (B3) ------------------------------------------------
+
+DATA_TEST = """
+name: Giriş
+baseUrl: https://a.com
+data:
+  - { kullanici: demo, sifre: 123 }
+  - { kullanici: kilitli, sifre: }
+steps:
+  - goto: /giris/${kullanici}
+  - fill: { label: Kullanıcı adı, value: "${kullanici}" }
+  - fill: { label: Şifre, value: "${sifre}" }
+  - screenshot: sonuc-${kullanici}
+"""
+
+
+def test_data_rows_are_expanded_with_placeholders_filled():
+    test = parse_test(DATA_TEST)
+    assert test.data == [{"kullanici": "demo", "sifre": "123"}, {"kullanici": "kilitli", "sifre": ""}]
+    first, second = test.expand_rows()
+    assert first.name == "Giriş [1. satır]" and second.name == "Giriş [2. satır]"
+    assert first.data_row == {"kullanici": "demo", "sifre": "123"}
+    assert first.data == [] and test.data  # kopyalar tekrar açılmaz; asıl test değişmez
+    assert first.steps[0].args == "/giris/demo"
+    assert first.steps[1].args.value == "demo" and first.steps[1].args.label == "Kullanıcı adı"
+    assert second.steps[2].args.value == ""  # boş değer -> boş metin
+    assert second.steps[3].args == "sonuc-kilitli"
+    assert test.steps[1].args.value == "${kullanici}"  # şablon olduğu gibi kalır
+
+
+def test_placeholder_missing_in_a_row():
+    msg = errors_of(DATA_TEST.replace("  - { kullanici: kilitli, sifre: }", "  - { kullanici: kilitli }"))
+    assert "3. adım (fill): '${sifre}' veri tablosunun 2. satırında yok" in msg
+
+
+def test_placeholder_without_data_table():
+    msg = errors_of(HEADER + '  - fill: { label: A, value: "${kullanici}" }\n')
+    assert "'${kullanici}' kullanılmış ama 'data' tablosu tanımlı değil" in msg
+
+
+def test_empty_data_table_and_bad_values():
+    assert "en az bir satır" in errors_of(HEADER.replace("steps:", "data: []\nsteps:") + "  - goto: /\n")
+    nested = HEADER.replace("steps:", "data:\n  - { a: [1, 2] }\nsteps:") + "  - goto: /\n"
+    assert "'a' tek bir değer olmalı" in errors_of(nested)
+
+
+def test_unquoted_placeholder_in_braces_gives_hint():
+    msg = errors_of(DATA_TEST.replace('value: "${kullanici}"', "value: ${kullanici}"))
+    assert "YAML sözdizimi hatası" in msg
+    assert "değeri tırnağa alın" in msg

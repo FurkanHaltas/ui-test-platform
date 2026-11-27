@@ -14,7 +14,8 @@ Doğrulama iki katmanlıdır:
 Böylece hata mesajında "3. adım (fill)" gibi net bir konum verebiliyoruz.
 """
 
-from dataclasses import dataclass
+import re
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -94,6 +95,8 @@ class TestHeader(BaseModel):
     testIdAttribute: str = "data-testid"  # testId locator'ının baktığı HTML özniteliği
     failOnPageErrors: bool = False  # True: sayfada JS/ağ hatası olursa test kalır (B1)
     retries: int = Field(0, ge=0, le=5)  # kalan test en fazla kaç kez yeniden denensin (B2)
+    # Veri odaklı test (B3): her satır, ${alan} yer tutucuları doldurularak ayrı koşturulur.
+    data: Optional[list[dict[str, Any]]] = None
     steps: list[Any]
 
     @field_validator("baseUrl")
@@ -102,6 +105,26 @@ class TestHeader(BaseModel):
         if not v.startswith(("http://", "https://")):
             raise ValueError("'baseUrl' http:// veya https:// ile başlamalı")
         return v
+
+    @field_validator("data")
+    @classmethod
+    def check_data_rows(cls, v):
+        if v is None:
+            return v
+        if len(v) == 0:
+            raise ValueError("'data' tablosu en az bir satır içermeli")
+        if len(v) > MAX_DATA_ROWS:
+            raise ValueError(f"'data' tablosu en fazla {MAX_DATA_ROWS} satır olabilir")
+        rows = []
+        for number, row in enumerate(v, start=1):
+            if not row:
+                raise ValueError(f"'data' tablosunun {number}. satırı boş")
+            for key, value in row.items():
+                if isinstance(value, (dict, list)):
+                    raise ValueError(f"'data' tablosunun {number}. satırında '{key}' tek bir değer olmalı")
+            # Bütün değerleri metne çevir (YAML'da 123 sayı, boş değer None olarak okunur).
+            rows.append({k: "" if val is None else str(val) for k, val in row.items()})
+        return rows
 
     @field_validator("steps")
     @classmethod
@@ -134,6 +157,10 @@ class StepSpec:
     args: Union[str, LocatorSpec, ValueLocatorSpec]
 
 
+MAX_DATA_ROWS = 50
+PLACEHOLDER = re.compile(r"\$\{(\w+)\}")  # ${kullanici} gibi yer tutucular
+
+
 @dataclass
 class TestDefinition:
     """Doğrulanmış, koşturulmaya hazır test tanımı."""
@@ -149,6 +176,16 @@ class TestDefinition:
     fail_on_page_errors: bool = False
     retries: int = 0
     source: str = "<metin>"
+    data: list[dict[str, str]] = field(default_factory=list)  # veri tablosu (B3)
+    data_row: Optional[dict[str, str]] = None  # bu test bir satırın kopyasıysa o satır
+
+    def expand_rows(self) -> list["TestDefinition"]:
+        """Veri tablosunun her satırı için yer tutucuları doldurulmuş ayrı bir test üretir."""
+        return [
+            replace(self, name=f"{self.name} [{number}. satır]", data=[], data_row=row,
+                    steps=[_substitute(step, row) for step in self.steps])
+            for number, row in enumerate(self.data, start=1)
+        ]
 
 
 # ---------------------------------------------------------------------------
@@ -172,10 +209,15 @@ def parse_test(text: str, source: str = "<metin>") -> TestDefinition:
         data = yaml.safe_load(text)
     except yaml.YAMLError as e:
         line = ""
+        hint = ""
         mark = getattr(e, "problem_mark", None)
         if mark is not None:
             line = f" (satır {mark.line + 1}, sütun {mark.column + 1})"
-        raise DslError(source, [f"YAML sözdizimi hatası{line}: {getattr(e, 'problem', e)}"])
+            # Süslü parantez içinde tırnaksız ${alan}: YAML '{' karakterini iç içe sözlük sanar.
+            lines = text.splitlines()
+            if mark.line < len(lines) and "${" in lines[mark.line]:
+                hint = ' — süslü parantez içinde ${...} kullanırken değeri tırnağa alın, ör. value: "${kullanici}"'
+        raise DslError(source, [f"YAML sözdizimi hatası{line}: {getattr(e, 'problem', e)}{hint}"])
 
     if not isinstance(data, dict):
         raise DslError(source, ["dosyanın en üstünde name, baseUrl ve steps alanları olmalı"])
@@ -197,6 +239,11 @@ def parse_test(text: str, source: str = "<metin>") -> TestDefinition:
     if errors:
         raise DslError(source, errors)
 
+    # 4) Yer tutucular: her ${alan} veri tablosunun her satırında olmalı
+    errors = _check_placeholders(steps, header.data)
+    if errors:
+        raise DslError(source, errors)
+
     return TestDefinition(
         name=header.name,
         base_url=header.baseUrl,
@@ -205,6 +252,7 @@ def parse_test(text: str, source: str = "<metin>") -> TestDefinition:
         test_id_attribute=header.testIdAttribute,
         fail_on_page_errors=header.failOnPageErrors,
         retries=header.retries,
+        data=header.data or [],
         steps=steps,
         source=source,
     )
@@ -245,6 +293,39 @@ def _parse_step(number: int, raw: Any) -> StepSpec:
         details = "; ".join(_translate_error(err) for err in e.errors())
         raise ValueError(f"{where}: {details}")
     return StepSpec(number, kind, args)
+
+
+def _step_texts(step: StepSpec) -> list[str]:
+    """Bir adımın içindeki bütün metin değerleri (yer tutucu aramak ve doldurmak için)."""
+    if isinstance(step.args, str):
+        return [step.args]
+    return [v for v in step.args.model_dump().values() if isinstance(v, str)]
+
+
+def _check_placeholders(steps: list[StepSpec], data: Optional[list[dict[str, str]]]) -> list[str]:
+    errors = []
+    for step in steps:
+        where = f"{step.number}. adım ({step.kind})"
+        names = {name for text in _step_texts(step) for name in PLACEHOLDER.findall(text)}
+        for name in sorted(names):
+            if not data:
+                errors.append(f"{where}: '${{{name}}}' kullanılmış ama 'data' tablosu tanımlı değil")
+                continue
+            missing = [str(i) for i, row in enumerate(data, start=1) if name not in row]
+            if missing:
+                errors.append(f"{where}: '${{{name}}}' veri tablosunun {', '.join(missing)}. satırında yok")
+    return errors
+
+
+def _substitute(step: StepSpec, row: dict[str, str]) -> StepSpec:
+    """Adımdaki ${alan} yer tutucularını satırdaki değerlerle değiştirir."""
+    def fill(text: str) -> str:
+        return PLACEHOLDER.sub(lambda m: row[m.group(1)], text)
+
+    if isinstance(step.args, str):
+        return StepSpec(step.number, step.kind, fill(step.args))
+    updates = {k: fill(v) for k, v in step.args.model_dump().items() if isinstance(v, str)}
+    return StepSpec(step.number, step.kind, step.args.model_copy(update=updates))
 
 
 def _translate_error(err: dict) -> str:

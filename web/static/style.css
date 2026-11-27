@@ -168,3 +168,7 @@ form.accept { margin-top: 10px; }
 .badge-flaky { color: var(--warn); background: var(--warn-bg); }
 .attempt { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 14px; margin-bottom: 8px; }
 .attempt summary { cursor: pointer; }
+
+/* Veri odaklı testler (B3) */
+.data-values code { font-size: 12px; }
+.attempt .table { margin: 8px 0; }
